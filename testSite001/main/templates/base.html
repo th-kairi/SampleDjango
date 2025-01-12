@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}サイトタイトル{% endblock %}</title>
+    {% load static %}
+
+    <!-- Bootstrap 5のCSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/myStyles.css' %}" rel="stylesheet">
+
+</head>
+<body>
+
+    <!-- 上部ナビゲーションメニュー -->
+    {% include 'navigation.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- メインコンテンツ -->
+            <div class="col-md-12">
+                {% block content %}
+                <!-- 各ページのコンテンツがここに入ります -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- サイト下部フッター -->
+    {% include 'footer.html' %}
+
+    <!-- 必須のBootstrap JavaScript -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!-- ナビゲーションバーの部分 -->
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <!-- 左オフキャンバスメニューを開くボタン -->
+    <button class="btn btn-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+        Left offcanvas menu
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <!-- 通常のナビゲーションメニュー（横並び） -->
+            <li class="nav-item active">
+                <a class="nav-link" href="#">ホーム</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 右オフキャンバスメニューを開くボタン -->
+    <button class="btn btn-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+        Right offcanvas menu
+    </button>
+</nav>
+
+<!-- 左側オフキャンバスメニュー -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">オフキャンバス</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="閉じる"></button>   
+    </div>
+    <div class="offcanvas-body">
+        <div>
+            プレースホルダとしてのテキスト。...
+        </div>
+        <div class="dropdown mt-3">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                ドロップダウン
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">メニュー1</a></li>
+                <li><a class="dropdown-item" href="#">メニュー2</a></li>
+                <li><a class="dropdown-item" href="#">メニュー3</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 右側オフキャンバスメニュー -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- 右オフキャンバスの内容 -->
+    </div>
+</div>
