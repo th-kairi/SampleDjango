@@ -2,8 +2,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
-    <h2>ログイン</h2>
+  <div class="col-md-4">
+    <h2 class="text-center mb-4">ログイン</h2>
     <form method="post">
       {% csrf_token %}
       <div class="form-group">
@@ -14,7 +14,7 @@
         <label for="id_password">パスワード</label>
         <input type="password" class="form-control" id="id_password" name="password" required>
       </div>
-      <button type="submit" class="btn btn-primary">ログイン</button>
+      <button type="submit" class="btn btn-primary mt-3 w-100">ログイン</button>
     </form>
   </div>
 {% endblock %}

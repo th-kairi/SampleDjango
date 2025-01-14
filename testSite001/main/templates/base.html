@@ -20,9 +20,11 @@
         <div class="row">
             <!-- メインコンテンツ -->
             <div class="col-md-12">
-                {% block content %}
-                <!-- 各ページのコンテンツがここに入ります -->
-                {% endblock %}
+                <div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+                    {% block content %}
+                    <!-- 各ページのコンテンツがここに入ります -->
+                    {% endblock %}
+                </div>
             </div>
         </div>
     </div>

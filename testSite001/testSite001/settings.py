@@ -27,9 +27,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # 追加したアプリケーションを設定する（インストールする）
-    # 'accounts.apps.AccountsConfig',
-    'main.apps.MainConfig',
     'accounts.apps.AccountsConfig',
+    'main.apps.MainConfig',
+    'member.apps.MemberConfig',
+    'employee.apps.EmployeeConfig',
 
     # 自動でカンマ区切りにするアプリ
     'django.contrib.humanize',

@@ -7,7 +7,8 @@ def create_superuser(apps, schema_editor):
     CustomUser.objects.create_superuser(
         username='admin',
         email='admin@mail.com',
-        password='admin'  # セキュアなパスワードを使用する
+        password='admin',  # セキュアなパスワードを使用する
+        is_password_encrypted=True,
     )
 
 class Migration(migrations.Migration):
