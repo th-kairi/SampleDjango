@@ -109,3 +109,30 @@ class Member(CustomUser):
 
     def __str__(self):
         return f"{self.name}({self.membership_status})"
+    
+
+# 勲章モデル
+class Medal(models.Model):
+    name = models.CharField(verbose_name="勲章名", max_length=100)  # 勲章名
+    description = models.TextField(verbose_name="説明")  # 勲章の説明
+    icon = models.ImageField(verbose_name="アイコン画像", upload_to="medals/icons/")  # アイコン画像
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "勲章"
+
+# 会員が取得した勲章
+class MemberMedal(models.Model):
+    member = models.ForeignKey(Member, verbose_name="会員", on_delete=models.CASCADE)  # 会員
+    medal = models.ForeignKey(Medal, verbose_name="勲章", on_delete=models.CASCADE)  # 勲章
+    acquisition_date = models.DateField(verbose_name="取得日")  # 取得日
+    expiration_date = models.DateField(verbose_name="有効期限", null=True, blank=True)  # 有効期限（無期限の場合はNULL）
+
+    def __str__(self):
+        return f"{self.member.name} - {self.medal.name}"
+
+    class Meta:
+        verbose_name_plural = "会員勲章"
+        unique_together = ('member', 'medal')  # 同じ会員が同じ勲章を2度取得できないように設定

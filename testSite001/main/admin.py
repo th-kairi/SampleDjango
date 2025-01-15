@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Member, Employee, position
+from .models import *
 
+# === account関連 ==================================================================
 # CustomUser用のAdmin
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -47,10 +48,21 @@ class EmployeeAdmin(admin.ModelAdmin):
     # `groups`、`user_permissions`、`date_joined` を非表示
     exclude = ('groups', 'user_permissions', 'date_joined')
 
-# positionの管理画面登録
+# 管理画面登録
 admin.site.register(position)
-
-# 各モデルの管理画面登録
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Member, MemberAdmin)
 admin.site.register(Employee, EmployeeAdmin)
+
+# === 職員機能関連
+class MemberMedalAdmin(admin.ModelAdmin):
+    list_display = ['member', 'medal', 'acquisition_date', 'expiration_date']
+    search_fields = ['member__name', 'medal__name']
+    list_filter = ['medal', 'acquisition_date']
+
+class MedalAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
+    search_fields = ['name']
+    
+admin.site.register(Medal, MedalAdmin)
+admin.site.register(MemberMedal, MemberMedalAdmin)
