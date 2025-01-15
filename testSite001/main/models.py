@@ -79,21 +79,21 @@ class Employee(CustomUser):
     class Meta:
         verbose_name_plural = "職員"
 
-def __str__(self):
-        # 部署、課、役職がNoneまたは空文字の場合は空白をセット
-        division_name = self.division.name if self.division and self.division.name else ''
-        team_name = self.team.name if self.team and self.team.name else ''
-        position_name = self.position.name if self.position and self.position.name else ''
-        
-        # すべて空の場合は括弧を表示しないようにする
-        names = [division_name, team_name, position_name]
-        non_empty_names = [name for name in names if name]  # 空文字ではない名前だけをリストに追加
+    def __str__(self):
+            # 部署、課、役職がNoneまたは空文字の場合は空白をセット
+            division_name = self.division.name if self.division and self.division.name else ''
+            team_name = self.team.name if self.team and self.team.name else ''
+            position_name = self.position.name if self.position and self.position.name else ''
+            
+            # すべて空の場合は括弧を表示しないようにする
+            names = [division_name, team_name, position_name]
+            non_empty_names = [name for name in names if name]  # 空文字ではない名前だけをリストに追加
 
-        # 名前が1つでもあればそれを表示、なければ空文字を返す
-        if non_empty_names:
-            return f"{self.name} ({' '.join(non_empty_names)})"
-        else:
-            return self.name
+            # 名前が1つでもあればそれを表示、なければ空文字を返す
+            if non_empty_names:
+                return f"{self.name} ({' '.join(non_empty_names)})"
+            else:
+                return self.name
 
 # 会員モデル（CustomUserを継承）
 class Member(CustomUser):
