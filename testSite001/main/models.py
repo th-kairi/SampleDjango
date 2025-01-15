@@ -10,7 +10,7 @@ class position(models.Model):
     cd = models.CharField(verbose_name="コード", max_length=10, primary_key=True)
     name = models.CharField(verbose_name="名称",max_length=20)
     name_en = models.CharField(verbose_name="名称(EN)",max_length=20)
-    type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES)
+    type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES, blank=True, null=True)
 
     # 役職モデルの参照設定
     class Meta:
@@ -73,8 +73,8 @@ class Employee(CustomUser):
                                  blank=True,
                                  null=True)
     # passwordは標準の機能を利用
-    zip_code = models.CharField(verbose_name="郵便番号", max_length=8)
-    address	= models.CharField(verbose_name="住所", max_length=50)
+    zip_code = models.CharField(verbose_name="郵便番号", max_length=8, blank=True, null=True)
+    address	= models.CharField(verbose_name="住所", max_length=50, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "職員"
