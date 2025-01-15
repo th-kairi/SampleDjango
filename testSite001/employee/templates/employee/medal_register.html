@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>勲章登録</h2>
+
+        <!-- 会員検索フォーム -->
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <!-- プラスボタン -->
+            <button type="button" class="btn btn-light rounded-circle" id="add-medal-btn" style="width: 40px; height: 40px; background-color: lightgray; margin-right: 10px;">
+                <span class="text-dark" style="font-size: 20px;">+</span>
+            </button>
+
+            <!-- 送信ボタン -->
+            <button type="submit" class="btn btn-primary mt-3">勲章を登録</button>
+        </form>
+
+        <!-- ポップアップ (モーダル) -->
+        <div class="modal" id="medalModal" tabindex="-1" role="dialog" aria-labelledby="medalModalLabel" aria-hidden="true">
+ 

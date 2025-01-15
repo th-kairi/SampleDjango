@@ -113,15 +113,19 @@ class Member(CustomUser):
 
 # 勲章モデル
 class Medal(models.Model):
-    name = models.CharField(verbose_name="勲章名", max_length=100)  # 勲章名
-    description = models.TextField(verbose_name="説明")  # 勲章の説明
-    icon = models.ImageField(verbose_name="アイコン画像", upload_to="medals/icons/")  # アイコン画像
+    name = models.CharField(max_length=100, verbose_name="勲章名")
+    image = models.ImageField(upload_to='medals/', verbose_name="アイコン", blank=True, null=True)  # 勲章のアイコン画像
+    description = models.TextField(verbose_name="勲章の説明")
+    requirements = models.TextField(max_length=400,verbose_name="授与条件", blank=True, null=True)  # 授与条件
+    eligible_for = models.TextField(max_length=100, verbose_name="対象者", blank=True, null=True)  # 対象者
+    awarding_method = models.TextField(max_length=300, verbose_name="授与方法", blank=True, null=True)  # 授与方法
+
+    class Meta:
+        verbose_name_plural = "勲章"
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        verbose_name_plural = "勲章"
 
 # 会員が取得した勲章
 class MemberMedal(models.Model):

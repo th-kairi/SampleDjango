@@ -51,7 +51,11 @@ ROOT_URLCONF = 'testSite001.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # mainアプリケーション内のtemplatesディレクトリを指定
+            # この設定をする事で別アプリケーションからbase.htmlを参照してサイトをデザインする事ができる
+            BASE_DIR / 'main/templates',  # BASE_DIR はプロジェクトのルートディレクトリ
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,18 +133,22 @@ STATICFILES_DIRS=(
     os.path.join(BASE_DIR, 'static'),
 )
 
-# 画像ファイルを表示・保存する為の設定（P428）
-# mediaフォルダの場所（BASE_DIR以下のmediaを登録）
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# 画像ファイルを表示・保存する為の設定
 # mediaのURLを登録
 MEDIA_URL = '/media/'
-
-# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' <- 削除してください
+# mediaフォルダの場所（BASE_DIR以下のmediaを登録）
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ログインに使うユーザーモデルを指定
 AUTH_USER_MODEL = 'main.CustomUser'
 # ログイン後のリダイレクト先
 LOGIN_REDIRECT_URL = '/'
+
+# ログイン時にメールアドレスとNameどちらでも認証できるようにカスタムバックエンドを使う
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # デフォルトの認証バックエンド
+    'testSite001.backends.CustomBackend',  # カスタムバックエンド
+]
 
 # 送信メールをターミナルに表示する設定（デバッグ用）
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
