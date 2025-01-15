@@ -6,7 +6,7 @@ from .models import *
 # CustomUser用のAdmin
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ['name', 'email', 'is_password_encrypted', 'is_active', 'is_staff']
+    list_display = ['member_num','name', 'email', 'is_password_encrypted', 'is_active', 'is_staff']
     list_filter = ['is_password_encrypted', 'is_active', 'is_staff']
     search_fields = ['email', 'name']
     

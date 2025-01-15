@@ -1,6 +1,6 @@
 from django import forms
-from main.models import *
 from django.core.exceptions import ValidationError
+from main.models import Member, Medal
 
 class MedalSelectionForm(forms.Form):
     member = forms.ModelChoiceField(queryset=Member.objects.filter(is_active=True), required=True, label="会員")

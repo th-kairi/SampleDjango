@@ -16,10 +16,7 @@ class CustomBackend(ModelBackend):
             try:
                 user = User.objects.get(name=username)  # nameを使って取得
             except User.DoesNotExist:
-                try:
-                    user = User.objects.get(member_num=username)  # nameを使って取得
-                except User.DoesNotExist:
-                    return None  # email と name のどちらでもない場合
+                return None  # email と name のどちらでもない場合
 
         if user.check_password(password):
             return user

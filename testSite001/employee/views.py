@@ -14,7 +14,7 @@ class MedalRegisterView(View):
     def get(self, request):
         # フォーム作成
         form = MedalSelectionForm()
-        
+
         # 会員が既に持っている勲章のIDを取得
         member_id = request.GET.get('member')  # 例えば、会員を選択するためのフォームからmember IDを取得
         if member_id:
@@ -23,7 +23,10 @@ class MedalRegisterView(View):
             existing_medals = MemberMedal.objects.filter(member=member).values_list('medal', flat=True)
             form.fields['medals'].queryset = Medal.objects.exclude(id__in=existing_medals)
 
-        return render(request, 'employee/medal_register.html', {'form': form})
+        # Medal リストを渡す
+        medals = Medal.objects.all()  # 勲章リストを取得
+
+        return render(request, 'employee/medal_register.html', {'form': form, 'medals': medals})
 
     def post(self, request):
         form = MedalSelectionForm(request.POST)
@@ -49,6 +52,6 @@ class MedalRegisterView(View):
                 )
 
             messages.success(request, f'{len(medals)} 個の勲章を {member.name} に登録しました。')
-            return redirect('employee/medal_register')
+            return redirect('employee:medal_register')
 
         return render(request, 'employee/medal_register.html', {'form': form})
