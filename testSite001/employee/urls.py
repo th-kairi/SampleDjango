@@ -7,5 +7,6 @@ app_name = 'employee'
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),  # トップページ用のURL
-    path('medal_register', MedalRegisterView.as_view(), name='medal_register'),  # 勲章授与ページ
+    path('select_member/', MemberSelectionView.as_view(), name='select_member'),  # 会員選択画面
+    path('select_medals/<int:member_id>/', MedalSelectView.as_view(), name='select_medals'),  # 勲章選択画面
 ]

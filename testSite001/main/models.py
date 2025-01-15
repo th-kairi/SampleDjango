@@ -107,8 +107,8 @@ class Member(CustomUser):
     class Meta:
         verbose_name_plural = "会員"
 
-    def __str__(self):
-        return f"{self.name}({self.membership_status})"
+    # def __str__(self):
+    #     return f"{self.name}({self.member_num})"
     
 
 # 勲章モデル

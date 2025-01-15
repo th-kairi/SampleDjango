@@ -2,56 +2,59 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.views import View
-from .forms import MedalSelectionForm
+from .forms import MemberSelectionForm
 from main.models import *
 from django.core.exceptions import ObjectDoesNotExist
 
 class IndexView(TemplateView):
     template_name = 'employee/index.html'  # 使用するテンプレートファイル
 
-
-class MedalRegisterView(View):
+class MemberSelectionView(View):
     def get(self, request):
-        # フォーム作成
-        form = MedalSelectionForm()
-
-        # 会員が既に持っている勲章のIDを取得
-        member_id = request.GET.get('member')  # 例えば、会員を選択するためのフォームからmember IDを取得
-        if member_id:
-            member = Member.objects.get(id=member_id)
-            # 会員が既に持っている勲章を除外
-            existing_medals = MemberMedal.objects.filter(member=member).values_list('medal', flat=True)
-            form.fields['medals'].queryset = Medal.objects.exclude(id__in=existing_medals)
-
-        # Medal リストを渡す
-        medals = Medal.objects.all()  # 勲章リストを取得
-
-        return render(request, 'employee/medal_register.html', {'form': form, 'medals': medals})
+        form = MemberSelectionForm()  # フォームをインスタンス化
+        return render(request, 'employee/select_member.html', {'form': form})
 
     def post(self, request):
-        form = MedalSelectionForm(request.POST)
+        form = MemberSelectionForm(request.POST)
         if form.is_valid():
             member = form.cleaned_data['member']
-            medals = form.cleaned_data['medals']
-            expiration_date = form.cleaned_data['expiration_date']
+            print("=====================================================")
+            print(member)
+            print(member.name)
+            print(member.email)
+            print(member.member_num)
+            print(member.id)
+            print("=====================================================")
+            if member:  # member が存在することを確認
+                # 会員選択後に勲章選択画面にリダイレクト
+                return redirect('medal_register:select_medals', member_id=member.id)
+            else:
+                # member が None の場合はエラーメッセージを表示
+                messages.error(request, "会員が正しく選択されていません。")
+                return render(request, 'employee/select_member.html', {'form': form})
+        return render(request, 'employee/select_member.html', {'form': form})
 
-            # 既に会員が持っている勲章を除外
-            existing_medals = MemberMedal.objects.filter(member=member).values_list('medal', flat=True)
-            available_medals = Medal.objects.exclude(id__in=existing_medals)
+class MedalSelectView(View):
+    def get(self, request, member_id):
+        # member_id を元に会員を取得
+        member = Member.objects.get(id=member_id)
 
-            # 登録する勲章を選択
-            for medal in medals:
-                if medal not in available_medals:
-                    continue  # 重複する勲章をスキップ
+        # 会員が既に持っている勲章を取得
+        existing_medals = MemberMedal.objects.filter(member=member).values_list('medal', flat=True)
 
-                MemberMedal.objects.create(
-                    member=member,
-                    medal=medal,
-                    acquisition_date=form.cleaned_data.get('acquisition_date'),
-                    expiration_date=expiration_date if expiration_date else None
-                )
+        # 既に持っていない勲章のみを表示
+        available_medals = Medal.objects.exclude(id__in=existing_medals)
 
-            messages.success(request, f'{len(medals)} 個の勲章を {member.name} に登録しました。')
-            return redirect('employee:medal_register')
+        return render(request, 'employee/medal_select.html', {'available_medals': available_medals, 'member': member})
 
-        return render(request, 'employee/medal_register.html', {'form': form})
+    def post(self, request, member_id):
+        member = Member.objects.get(id=member_id)
+        selected_medals = request.POST.getlist('medals')  # 複数選択のためgetlistを使用
+
+        # 勲章を会員に登録
+        for medal_id in selected_medals:
+            medal = Medal.objects.get(id=medal_id)
+            MemberMedal.objects.create(member=member, medal=medal)
+
+        # 勲章登録完了後に遷移する場所
+        return redirect('employee:medal_member')
