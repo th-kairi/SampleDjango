@@ -89,3 +89,8 @@ body .container-fluid {
     padding-top: 40px !important;  /* 上部メニューの高さ分 */
     padding-bottom: 40px !important;  /* フッターの高さに合わせて調整 */
 }
+
+.container-half {
+    width: 50%; /* 横幅を50%に設定 */
+    margin: 0 auto; /* 横中央に配置 */
+}

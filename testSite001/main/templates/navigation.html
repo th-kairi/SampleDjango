@@ -9,7 +9,7 @@
         <ul class="navbar-nav">
             <!-- 通常のナビゲーションメニュー（横並び） -->
             <li class="nav-item active">
-                <a class="nav-link" href="#">ホーム</a>
+                <a class="nav-link" href="/">ホーム</a>
             </li>
         </ul>
     </div>
@@ -53,16 +53,16 @@
         <!-- 右オフキャンバスの内容 -->
         <ui class="list-group">
             {% if user.is_authenticated %}
-                <li class="list-group-item">
-                    <a class="nav-link" href="{% url 'main:index' %}">メインサイト</a>
-                </li>
-                <li class="list-group-item">
-                    <a class="nav-link" href="{% url 'member:index' %}">会員画面</a>
-                </li>
-                <li class="list-group-item">
-                    <a class="nav-link" href="{% url 'employee:index' %}">職員画面</a>
-                </li>
                 {% if user.is_staff %}
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'main:index' %}">メインサイト</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'member:index' %}">会員画面</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'employee:index' %}">職員画面</a>
+                    </li>
                     <!-- 管理者用メニュー項目 -->
                     <li class="list-group-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">管理画面</a>
