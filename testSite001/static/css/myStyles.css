@@ -54,3 +54,38 @@ body {
     background-color: #007bff;
     color: white;
 }
+
+/* フッターを固定する */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+/* サイト下部フッター */
+footer {
+    background-color: #f8f9fa;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    width: 100%;
+}
+
+/* コンテンツ部分が画面の残りの部分を埋めるようにする */
+.content-wrapper {
+    padding-top: 70px;  /* ナビゲーションメニューの高さ分を調整 */
+}
+
+/* ナビゲーションを上部に固定 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;  /* 他の要素より前面に表示されるように */
+}
+
+/* より具体的なセレクタで上書き */
+body .container-fluid {
+    padding-top: 40px !important;  /* 上部メニューの高さ分 */
+    padding-bottom: 40px !important;  /* フッターの高さに合わせて調整 */
+}

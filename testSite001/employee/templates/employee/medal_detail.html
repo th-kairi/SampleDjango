@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>{{ medal.name }} の詳細</h2>
+
+        <div class="card">
+            <!-- 画像サイズを調整。最大幅と高さを設定し、比率を維持 -->
+            <img src="{{ medal.image.url }}" alt="{{ medal.name }}" class="card-img-top" 
+                style="max-width: 300px; max-height: 400px; width: 100%; 
+                       height: auto; object-fit: contain; margin: 0 auto;">
+            <div class="card-body">
+                <h5 class="card-title">{{ medal.name }}</h5>
+                <p class="card-text">{{ medal.description }}</p>
+                <p class="card-text">取得対象: {{ medal.eligible_for }}</p>
+                <p class="card-text">取得条件: {{ medal.requirements }}</p>
+            </div>
+        </div>
+
+        {% if already_acquired %}
+            <p class="text-success">この勲章はすでに取得済みです。</p>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="acquisition_date">取得日</label>
+                    <input type="date" name="acquisition_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="expiration_date">期限</label>
+                    <input type="date" name="expiration_date" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">授与</button>
+            </form>
+        {% endif %}
+
+        <a href="{% url 'employee:acquired_medals' member_num=member.member_num %}" class="btn btn-secondary mt-3">取得済み勲章に戻る</a>
+    </div>
+{% endblock %}

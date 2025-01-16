@@ -4,23 +4,19 @@
     <div class="container">
         <h2>{{ member.name }} の勲章を選択</h2>
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="medals">勲章を選択:</label>
-                <div class="checkbox">
-                    {% for medal in available_medals %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="{{ medal.id }}" name="medals">
-                            <label class="form-check-label">
-                                <img src="{{ medal.image.url }}" alt="{{ medal.title }}" width="50" height="50">
-                                {{ medal.title }}
-                            </label>
-                        </div>
-                    {% endfor %}
+        <div class="row">
+            {% for medal in available_medals %}
+                <div class="col-md-2">
+                    <div class="card">
+                        <a href="{% url 'employee:medal_detail' member_num=member.member_num medal_id=medal.id %}">
+                            <img src="{{ medal.image.url }}" class="card-img-top" style="height: 150px; object-fit: contain;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ medal.name }}</h5>
+                            </div>
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary">選択した勲章を登録</button>
-        </form>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

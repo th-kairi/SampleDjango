@@ -21,14 +21,15 @@
     <!-- 上部ナビゲーションメニュー -->
     {% include 'navigation.html' %}
 
-    <div class="container-fluid">
+    <div class="container-fluid content-wrapper">
         <div class="row">
             <!-- メインコンテンツ -->
             <div class="col-md-12">
-                <div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+                <div class="container-fluid">
                     {% block content %}
                     <!-- 各ページのコンテンツがここに入ります -->
                     {% endblock %}
+                </div>
             </div>
         </div>
     </div>
