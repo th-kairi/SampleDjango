@@ -1,7 +1,8 @@
 # main/views.py
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
+from .models import *
 
 
 class IndexView(TemplateView):
@@ -22,3 +23,4 @@ class IndexView(TemplateView):
 
         # ログインしていない場合やその他のケースは、メインアプリのIndexにリダイレクト
         return super().get(request, *args, **kwargs)
+    
