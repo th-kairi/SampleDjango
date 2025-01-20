@@ -140,3 +140,80 @@ class MemberMedal(models.Model):
     class Meta:
         verbose_name_plural = "会員勲章"
         unique_together = ('member', 'medal')  # 同じ会員が同じ勲章を2度取得できないように設定
+
+# ランクモデル
+class Rank(models.Model):
+    name = models.CharField(verbose_name="ランク名", max_length=50)  # ランク名
+    description = models.TextField(verbose_name="ランクの説明", blank=True, null=True)  # ランクの説明
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "ランク"
+
+# スタッフモデル（CustomUserを継承）
+class Staff(CustomUser):
+    division = models.ForeignKey(position, verbose_name="部署",
+                                 on_delete=models.CASCADE, 
+                                 limit_choices_to={'type': '部署'}, 
+                                 related_name='staff_in_division',
+                                 blank=True, null=True)
+    team = models.ForeignKey(position, verbose_name="課",
+                              on_delete=models.CASCADE,
+                              limit_choices_to={'type': '課'}, 
+                              related_name='staff_in_teasm',
+                              blank=True, null=True)
+    position = models.ForeignKey(position, verbose_name="役職", 
+                                 on_delete=models.CASCADE, 
+                                 limit_choices_to={'type': '役職'}, 
+                                 related_name='staff_in_position',
+                                 blank=True, null=True)
+    rank = models.ForeignKey(Rank, verbose_name="ランク",
+                             on_delete=models.SET_NULL,
+                             blank=True, null=True)
+    hire_date = models.DateField(verbose_name="入社日", blank=True, null=True)
+    phone_number = models.CharField(verbose_name="電話番号", max_length=15, blank=True, null=True)
+    
+    class Meta:
+        verbose_name_plural = "スタッフ"
+
+    def __str__(self):
+        return f"({self.rank}){self.name}:{self.member_num}"
+
+    class Meta:
+        verbose_name_plural = "スタッフ"
+        unique_together = ('division', 'team', 'position')  # 同じ部署、課、役職のスタッフを2度登録できないように設定
+        permissions = [
+            ('can_view_staff', 'Can view staff'),
+        ]
+
+# シフト希望モデル
+class ShiftRequest(models.Model):
+    staff = models.ForeignKey(Staff, verbose_name="スタッフ", on_delete=models.CASCADE)
+    date = models.DateField(verbose_name="希望日")
+    start_time = models.TimeField(verbose_name="開始時間")
+    end_time = models.TimeField(verbose_name="終了時間")
+    is_submitted = models.BooleanField(default=False, verbose_name="提出済み")
+    
+    def __str__(self):
+        return f"{self.staff.name} - {self.date} ({self.start_time} - {self.end_time})"
+
+    class Meta:
+        verbose_name_plural = "シフト希望"
+        unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ
+
+# シフトスケジュールモデル
+class ShiftSchedule(models.Model):
+    staff = models.ForeignKey(Staff, verbose_name="スタッフ", on_delete=models.CASCADE)
+    date = models.DateField(verbose_name="勤務日")
+    start_time = models.TimeField(verbose_name="勤務開始時間")
+    end_time = models.TimeField(verbose_name="勤務終了時間")
+    is_confirmed = models.BooleanField(default=False, verbose_name="確定済み")
+    
+    def __str__(self):
+        return f"{self.staff.name} - {self.date} ({self.start_time} - {self.end_time})"
+
+    class Meta:
+        verbose_name_plural = "シフトスケジュール"
+        unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ

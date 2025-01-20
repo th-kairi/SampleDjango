@@ -1,13 +1,37 @@
-<div class="sidebar">
-    <ul class="nav flex-column">
-        <li class="nav-item">
-            <a class="nav-link" href="#">プロフィール</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">設定</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">ログアウト</a>
-        </li>
-    </ul>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- 右オフキャンバスの内容 -->
+        <ui class="list-group">
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'main:index' %}">メインサイト</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'member:index' %}">会員画面</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'employee:index' %}">職員画面</a>
+                    </li>
+                    <!-- 管理者用メニュー項目 -->
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'admin:index' %}">管理画面</a>
+                    </li>
+                    <!-- 管理者用メニュー項目 -->
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'accounts:password_encryption' %}">暗号化画面</a>
+                        
+                    </li>
+                {% endif %}
+                <li class="list-group-item"><a href="{% url 'accounts:logout' %}">ログアウト</a></li>
+            {% else %}
+                <li class="list-group-item"><a href="{% url 'accounts:login' %}">ログイン</a></li>
+            {% endif %}
+        </ui>
+    </div>
 </div>

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ staff.name }} の詳細</h1>
+    <p>メール: {{ staff.email }}</p>
+    <p>部署: {{ staff.division.name }}</p>
+    <p>課: {{ staff.team.name }}</p>
+    <p>役職: {{ staff.position.name }}</p>
+    <p>入社日: {{ staff.hire_date }}</p>
+    <p>電話番号: {{ staff.phone_number }}</p>
+    <p>ランク: {{ staff.rank.name }}</p>
+    <a href="{% url 'staff:staff_list' %}">スタッフ一覧に戻る</a>
+{% endblock %}

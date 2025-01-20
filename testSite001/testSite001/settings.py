@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'member.apps.MemberConfig',
     'employee.apps.EmployeeConfig',
+    'staff.apps.StaffConfig',
 
     # 自動でカンマ区切りにするアプリ
     'django.contrib.humanize',

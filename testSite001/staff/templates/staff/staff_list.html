@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>スタッフ一覧</h1>
+    <a href="{% url 'staff:staff_add' %}">スタッフを追加</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>名前</th>
+                <th>部署</th>
+                <th>役職</th>
+                <th>詳細</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff %}
+                <tr>
+                    <td>{{ staff.name }}</td>
+                    <td>{{ staff.division.name }}</td>
+                    <td>{{ staff.position.name }}</td>
+                    <td><a href="{% url 'staff:staff_detail' staff.pk %}">詳細</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

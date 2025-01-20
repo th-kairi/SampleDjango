@@ -4,11 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls')), 
-    path('', include('main.urls')),
-    path('employee/', include('employee.urls')),
-    path('member/', include('member.urls')),
+    path('admin/', admin.site.urls), # 標準の管理者ページ
+    path('accounts/', include('accounts.urls')), # ログイン周り（CUstomUser周り）
+    path('', include('main.urls')), # 管理アプリ
+    path('employee/', include('employee.urls')), # employeeアプリ
+    path('member/', include('member.urls')), # memberアプリ
+    path('staff/', include('staff.urls')),  # staffアプリ
 
 ]
 

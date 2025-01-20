@@ -32,6 +32,15 @@ def create_superuser(apps, schema_editor):
         is_password_encrypted=True,
     )
     member.save()
+    
+    member = Staff.objects.create_user(
+        username='staff',
+        name='staff',
+        email='staff@mail.com',
+        password='staff',  # セキュアなパスワードを使用する
+        is_password_encrypted=True,
+    )
+    member.save()
 
 class Migration(migrations.Migration):
 
