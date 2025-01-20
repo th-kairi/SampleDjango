@@ -1,25 +1,122 @@
 # staff/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from main.models import *
-from .forms import StaffForm
+from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views.generic import *
+from django.views.generic.edit import CreateView
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from .models import *
+from .forms import *
 
 # スタッフ一覧ページ
-def staff_list(request):
-    staff = Staff.objects.all()
-    return render(request, 'staff/staff_list.html', {'staff': staff})
+class StaffListView(ListView):
+    model = Staff
+    template_name = 'staff/staff_list.html'
+    context_object_name = 'staff_list'
 
 # スタッフ詳細ページ
-def staff_detail(request, pk):
-    staff = get_object_or_404(Staff, pk=pk)
-    return render(request, 'staff/staff_detail.html', {'staff': staff})
+class StaffDetailView(DetailView):
+    model = Staff
+    template_name = 'staff/staff_detail.html'
+    context_object_name = 'staff'
 
 # スタッフ追加ページ
-def staff_add(request):
-    if request.method == 'POST':
-        form = StaffForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('staff:staff_list')
-    else:
-        form = StaffForm()
-    return render(request, 'staff/staff_form.html', {'form': form})
+class StaffCreateView(CreateView):
+    model = Staff
+    template_name = 'staff/staff_form.html'
+    form_class = StaffForm
+    success_url = reverse_lazy('staff:staff_list')
+
+# シフト確認ページ（スタッフのシフト一覧）
+class ShiftScheduleListView(ListView):
+    model = ShiftSchedule
+    template_name = 'staff/shift_schedule_list.html'
+    context_object_name = 'shifts'
+
+    def get_queryset(self):
+        # 現在の月のシフトをフィルタリング
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+
+        # シフトスケジュールを取得
+        return ShiftSchedule.objects.filter(date__year=current_year, date__month=current_month).select_related('staff')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_month'] = timezone.now().month
+        context['current_year'] = timezone.now().year
+        return context
+
+# スタッフのシフト詳細ページ
+class StaffShiftDetailView(DetailView):
+    model = ShiftSchedule
+    template_name = 'staff/staff_shift_detail.html'
+    context_object_name = 'shift'
+
+    def get_object(self):
+        shift_id = self.kwargs.get('pk')  # URLのpkを取得
+        return ShiftSchedule.objects.get(id=shift_id)  # 該当するシフト情報を取得
+    
+# シフトのスケジュールを表示
+class ShiftScheduleView(View):
+    def get(self, request, *args, **kwargs):
+        # 現在の日付を取得
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        
+        # 月の1日が何曜日かを計算
+        first_day_of_month = timezone.datetime(current_year, current_month, 1)
+        start_weekday = first_day_of_month.weekday()  # 0:月曜日, 6:日曜日
+
+        # ログインユーザーのスタッフ情報を取得
+        # staff = Staff.objects.filter(user=request.user).first()  # ここでログインユーザーに紐づくスタッフを取得
+        
+        Staff_id = self.kwargs.get('pk')  # URLのpkを取得
+
+        # シフトスケジュールを取得（ログインユーザーに関連するもののみ）
+        if Staff_id:
+            print("--------------------------------------------------------")
+            print("Staff_id:",Staff_id)
+            shifts = ShiftSchedule.objects.filter(staff=Staff_id,
+                                                  date__year=current_year, 
+                                                  date__month=current_month).select_related('staff')
+            print('shifts:',shifts)
+        else:
+            shifts = []  # スタッフが見つからなかった場合は空のリストを返す
+
+        # 日付ごとにシフトをまとめた辞書を作成
+        shift_dict = {}
+        for shift in shifts:
+            day = shift.date.day
+            print("day:",day)
+            if day not in shift_dict:
+                shift_dict[day] = []
+            shift_dict[day].append(shift)
+
+        # 1週間ごとに日付を並べる
+        days_in_month = list(range(1, 32))  # 1日から31日まで
+        weeks_of_month = []
+
+        # 月初めの日付が何曜日かによって開始日を調整
+        # 1日の曜日に合わせて日付を並べる
+        week = [None] * start_weekday  # 月の最初の日の前の空白を追加
+        for day in days_in_month:
+            if len(week) == 7:  # 1週間分埋まったら新しい週を作る
+                weeks_of_month.append(week)
+                week = []
+            week.append(day)
+
+        if len(week) > 0:  # 最後の週を追加（もし1週間が満杯でない場合）
+            weeks_of_month.append(week)
+
+        # コンテキストにデータを渡す
+        context = {
+            'shifts': shifts,
+            'shift_dict': shift_dict,
+            'current_month': current_month,
+            'current_year': current_year,
+            'weeks_of_month': weeks_of_month,
+        }
+        print("context:",context)
+
+        return render(request, 'staff/shift_schedule.html', context)

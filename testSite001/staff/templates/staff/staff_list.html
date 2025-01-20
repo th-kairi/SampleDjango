@@ -1,26 +1,37 @@
+<!-- staff_list.html -->
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>スタッフ一覧</h1>
-    <a href="{% url 'staff:staff_add' %}">スタッフを追加</a>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>名前</th>
-                <th>部署</th>
-                <th>役職</th>
-                <th>詳細</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for staff in staff %}
-                <tr>
-                    <td>{{ staff.name }}</td>
-                    <td>{{ staff.division.name }}</td>
-                    <td>{{ staff.position.name }}</td>
-                    <td><a href="{% url 'staff:staff_detail' staff.pk %}">詳細</a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <h1>スタッフ一覧</h1>
+
+  <!-- シフト確認画面に遷移するボタン -->
+  <div class="mb-4">
+    <a href="{% url 'staff:shift_schedule_list' %}" class="btn btn-primary">
+      シフト確認ページに遷移
+    </a>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>スタッフ名</th>
+        <th>部署</th>
+        <th>役職</th>
+        <th>シフト確認</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for staff in staff_list %}
+        <tr>
+          <td>{{ staff.name }}</td>
+          <td>{{ staff.division }}</td>
+          <td>{{ staff.position }}</td>
+          {% comment %}
+              <td><a href="{% url 'staff:shift_schedule' staff.pk %}" class="btn btn-info">シフト確認</a></td>
+          {% endcomment %}
+          <td><a href="{% url 'staff:shift_schedule' staff.pk %}" class="btn btn-info">シフト確認</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

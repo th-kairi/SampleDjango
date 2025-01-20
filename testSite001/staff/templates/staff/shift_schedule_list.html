@@ -1,0 +1,32 @@
+<!-- staff/shift_schedule_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>シフト一覧 - {{ current_year }}年{{ current_month }}月</h1>
+  <div class="mb-4">
+    <a href="{% url 'staff:staff_list' %}" class="btn btn-primary">
+      スタッフ一覧画面に戻る
+    </a>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>スタッフ名</th>
+        <th>勤務日</th>
+        <th>勤務時間</th>
+        <th>確認</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for shift in shifts %}
+        <tr>
+          <td>{{ shift.staff.name }}</td>
+          <td>{{ shift.date }}</td>
+          <td>{{ shift.start_time }} - {{ shift.end_time }}</td>
+          <td><a href="{% url 'staff:staff_shift_detail' shift.pk %}" class="btn btn-info">詳細</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

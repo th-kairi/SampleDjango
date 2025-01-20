@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+<!-- Jsonデータを抜き出すためのカスタムフィルターを読み込む -->
+{% load shift_filters %} 
+
+{% block content %}
+    <!-- 現在の年と月を表示 -->
+    <h2 class="text-center">{{ current_year }}年{{ current_month }}月のシフト</h2>
+    <div class="mb-4">
+      <a href="{% url 'staff:staff_list' %}" class="btn btn-primary">
+        スタッフ一覧画面に戻る
+      </a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr class="table-secondary">
+                <th class="text-center">日</th>
+                <th class="text-center">月</th>
+                <th class="text-center">火</th>
+                <th class="text-center">水</th>
+                <th class="text-center">木</th>
+                <th class="text-center">金</th>
+                <th class="text-center">土</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 月ごとに週をループ -->
+            {% for week in weeks_of_month %}
+                <tr>
+                    <!-- 週ごとの各曜日をループ -->
+                    {% for day in week %}
+                        <td class="text-center {% if shift_dict|get_item:day %} bg-success text-white {% else %} bg-light {% endif %}">
+                            {% if day %}
+                                <div>{{ day }}</div>
+
+                                <!-- shift_dictからその日のシフト情報を取得 -->
+                                {% if shift_dict|get_item:day %}
+                                    <div class="mt-2">
+                                        {% for shift in shift_dict|get_item:day %}
+                                            <p>{{ shift.start_time }} - {{ shift.end_time }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="mt-2">シフトなし</div>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
