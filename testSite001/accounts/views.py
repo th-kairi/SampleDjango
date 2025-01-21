@@ -65,11 +65,12 @@ class PasswordEncryptionView(View):
         messages.success(request, "選択されたユーザーのパスワードを暗号化しました。")
         return redirect('accounts:password_encryption')
 
+# 職員アカウント作成
 class EmployeeCreateView(CreateView):
     model = Employee
     form_class = EmployeeCreateForm
     template_name = 'accounts/employee_create.html'
-    success_url = reverse_lazy('employee:employee_list')  # 職員一覧ページにリダイレクトする例
+    success_url = reverse_lazy('employee:index')  # 職員一覧ページにリダイレクトする例
 
     def form_valid(self, form):
         # パスワードを暗号化して保存する処理（もし必要な場合）
@@ -82,4 +83,5 @@ class EmployeeCreateView(CreateView):
     def form_invalid(self, form):
         # エラーメッセージが表示される
         messages.error(self.request, '職員作成に失敗しました。')
-        return self.render_to_response({'form': form})
+        # フォームが無効な場合、エラーメッセージを表示
+        return self.render_to_response(self.get_context_data(form=form))

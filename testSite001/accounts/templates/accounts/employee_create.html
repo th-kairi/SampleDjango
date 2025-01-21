@@ -1,14 +1,144 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>職員作成</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">職員を作成</button>
-  </form>
-  
-  <div class="mt-3">
-    <a href="{% url 'employee:index' %}" class="btn btn-secondary">ホームに戻る</a>
+  <div class="container">
+    <h1 class="my-4">職員作成</h1>
+    <form method="post" class="needs-validation" novalidate>
+      {% csrf_token %}
+      
+      <!-- 氏名 -->
+      <div class="mb-3 row">
+        <label for="id_name" class="col-sm-2 col-form-label">氏名</label>
+        <div class="col-sm-10">
+          <input type="text" name="name" id="id_name" 
+                 class="form-control-sm {% if form.name.errors %} is-invalid{% endif %}" 
+                 value="{{ form.name.value }}">
+          {% if form.name.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.name.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- メールアドレス -->
+      <div class="mb-3 row">
+        <label for="id_email" class="col-sm-2 col-form-label">メールアドレス</label>
+        <div class="col-sm-10">
+          <input type="email" name="email" id="id_email"
+                 class="form-control-sm {% if form.email.errors %}is-invalid{% endif %}"
+                 value="{{ form.email.value }}">
+          {% if form.email.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.email.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- パスワード -->
+      <div class="mb-3 row">
+        <label for="id_password1" class="col-sm-2 col-form-label">パスワード</label>
+        <div class="col-sm-10">
+          <input type="password" name="password1" id="id_password1"
+                 class="form-control-sm {% if form.password1.errors %}is-invalid{% endif %}"
+                 value="{{ form.password1.value }}">
+          {% if form.password1.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.password1.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- パスワード確認 -->
+      <div class="mb-3 row">
+        <label for="id_password2" class="col-sm-2 col-form-label">パスワード確認</label>
+        <div class="col-sm-10">
+          <input type="password" name="password2" id="id_password2"
+                 class="form-control-sm {% if form.password2.errors %}is-invalid{% endif %}" 
+                 value="{{ form.password2.value }}">
+          {% if form.password2.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.password2.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- 部署 -->
+      <div class="mb-3 row">
+        <label for="id_division" class="col-sm-2 col-form-label">部署</label>
+        <div class="col-sm-10">
+          <select name="division" id="id_division"
+                  class="form-control-sm {% if form.division.errors %}is-invalid{% endif %}">
+            {% for choice in form.division.field.choices %}
+              <option value="{{ choice.0 }}" {% if choice.0 == form.division.value %}selected{% endif %}>{{ choice.1 }}</option>
+            {% endfor %}
+          </select>
+          {% if form.division.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.division.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 部門 -->
+      <div class="mb-3 row">
+        <label for="id_team" class="col-sm-2 col-form-label">部門</label>
+        <div class="col-sm-10">
+          <select name="team" id="id_team" 
+                  class="form-control-sm {% if form.team.errors %}is-invalid{% endif %}">
+            {% for choice in form.team.field.choices %}
+              <option value="{{ choice.0 }}" {% if choice.0 == form.team.value %}selected{% endif %}>{{ choice.1 }}</option>
+            {% endfor %}
+          </select>
+          {% if form.team.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.team.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 役職 -->
+      <div class="mb-3 row">
+        <label for="id_position" class="col-sm-2 col-form-label">役職</label>
+        <div class="col-sm-10">
+          <select name="position" id="id_position" 
+                class="form-control-sm {% if form.position.errors %}is-invalid{% endif %}">
+            {% for choice in form.position.field.choices %}
+              <option value="{{ choice.0 }}" {% if choice.0 == form.position.value %}selected{% endif %}>{{ choice.1 }}</option>
+            {% endfor %}
+          </select>
+          {% if form.position.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.position.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">職員を作成</button>
+    </form>
+    
+    <div class="mt-3">
+      <a href="{% url 'employee:index' %}" class="btn btn-secondary">戻る</a>
+    </div>
   </div>
 {% endblock %}
