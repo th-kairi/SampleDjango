@@ -2,8 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView
-from django.contrib.auth import login, get_user_model
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.views import View
@@ -74,9 +73,9 @@ class EmployeeCreateView(CreateView):
 
     def form_valid(self, form):
         # パスワードを暗号化して保存する処理（もし必要な場合）
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data['password'])
-        user.save()
+        employee = form.save(commit=False)
+        employee.set_password(form.cleaned_data['password'])
+        employee.save()
         messages.success(self.request, '職員が作成されました。')
         return redirect(self.success_url)
 
