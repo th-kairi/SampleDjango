@@ -14,12 +14,4 @@ urlpatterns = [
           views.PasswordEncryptionView.as_view(),
           name='password_encryption'
         ),
-
-        # サインアップ:signup
-    # path(
-    #     "signup",
-    #     # TemplateView.as_view(template_name="accounts/signup.html"),
-    #     views.SignUpView.as_view(),
-    #     name="signup",
-    # ),
 ]

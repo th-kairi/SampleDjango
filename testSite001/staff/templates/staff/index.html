@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="mb-4">
+        <!-- 自分以外のシフト一覧に遷移するボタン -->
+        {% if request.user.id %}
+            <a href="{% url 'staff:shift_schedule_list_for_staff' staff_id=request.user.id %}" class="btn btn-secondary">
+                自分以外のシフト一覧を見る
+            </a>
+        {% else %}
+            <p>スタッフIDが無効です。</p>
+        {% endif %}
+    </div>
+{% endblock %}

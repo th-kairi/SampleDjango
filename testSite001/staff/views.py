@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 
+class IndexView(TemplateView):
+    template_name = 'staff/index.html'  # 使用するテンプレートファイル
+
 # スタッフ一覧ページ
 class StaffListView(ListView):
     model = Staff
@@ -34,12 +37,22 @@ class ShiftScheduleListView(ListView):
     context_object_name = 'shifts'
 
     def get_queryset(self):
-        # 現在の月のシフトをフィルタリング
         current_month = timezone.now().month
         current_year = timezone.now().year
-
-        # シフトスケジュールを取得
-        return ShiftSchedule.objects.filter(date__year=current_year, date__month=current_month).select_related('staff')
+        # 職員ユーザーがアクセスした場合
+        if self.kwargs.get('staff_id') is None:
+            return ShiftSchedule.objects.filter(
+                date__year=current_year, 
+                date__month=current_month
+            ).select_related('staff')
+        # スタッフが参照した場合（staff_idが渡された場合）
+        else:
+            staff = staff.objects.get(id=self.kwargs['staff_id'])
+            return ShiftSchedule.objects.filter(
+                staff=staff,
+                date__year=current_year,
+                date__month=current_month
+            ).select_related('staff')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

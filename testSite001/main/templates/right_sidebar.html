@@ -18,6 +18,9 @@
                     <li class="list-group-item">
                         <a class="nav-link" href="{% url 'employee:index' %}">職員画面</a>
                     </li>
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'staff:index' %}">スタッフ画面</a>
+                    </li>
                     <!-- 管理者用メニュー項目 -->
                     <li class="list-group-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">管理画面</a>
@@ -28,6 +31,9 @@
                         
                     </li>
                 {% endif %}
+                <li class="list-group-item">
+                    <a href="{% url 'employee:employee_create' %}" class="btn btn-primary">新しい職員を作成</a>
+                </li>
                 <li class="list-group-item"><a href="{% url 'accounts:logout' %}">ログアウト</a></li>
             {% else %}
                 <li class="list-group-item"><a href="{% url 'accounts:login' %}">ログイン</a></li>

@@ -1,12 +1,20 @@
-<!-- staff/shift_schedule_list.html -->
 {% extends 'base.html' %}
 
 {% block content %}
   <h1>シフト一覧 - {{ current_year }}年{{ current_month }}月</h1>
+  
   <div class="mb-4">
-    <a href="{% url 'staff:staff_list' %}" class="btn btn-primary">
-      スタッフ一覧画面に戻る
-    </a>
+    <!-- ログインユーザーがシフト一覧を表示する場合 -->
+    {% if not request.resolver_match.kwargs.staff_id %}
+      <a href="{% url 'staff:staff_list' %}" class="btn btn-primary">
+        スタッフ一覧画面に戻る
+      </a>
+    {% else %}
+      <!-- スタッフが選ばれた場合は、戻るボタン -->
+      <a href="{% url 'staff:shift_schedule_list' %}" class="btn btn-primary">
+        自分のシフト一覧に戻る
+      </a>
+    {% endif %}
   </div>
 
   <table class="table table-striped">

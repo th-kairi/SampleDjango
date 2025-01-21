@@ -1,10 +1,13 @@
 # accounts/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth import get_user_model
+from django.views.generic.edit import CreateView
+from django.contrib.auth import login, get_user_model
+from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse_lazy
-from django.views import View
 from django.contrib import messages
+from django.views import View
+from .forms import *
 
 # CustomUserモデルを取得
 User = get_user_model()
@@ -62,3 +65,22 @@ class PasswordEncryptionView(View):
         
         messages.success(request, "選択されたユーザーのパスワードを暗号化しました。")
         return redirect('accounts:password_encryption')
+
+class EmployeeCreateView(CreateView):
+    model = Employee
+    form_class = EmployeeCreateForm
+    template_name = 'accounts/employee_create.html'
+    success_url = reverse_lazy('employee:employee_list')  # 職員一覧ページにリダイレクトする例
+
+    def form_valid(self, form):
+        # パスワードを暗号化して保存する処理（もし必要な場合）
+        user = form.save(commit=False)
+        user.set_password(form.cleaned_data['password'])
+        user.save()
+        messages.success(self.request, '職員が作成されました。')
+        return redirect(self.success_url)
+
+    def form_invalid(self, form):
+        # エラーメッセージが表示される
+        messages.error(self.request, '職員作成に失敗しました。')
+        return self.render_to_response({'form': form})

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>職員作成</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">職員を作成</button>
+  </form>
+  
+  <div class="mt-3">
+    <a href="{% url 'employee:index' %}" class="btn btn-secondary">ホームに戻る</a>
+  </div>
+{% endblock %}

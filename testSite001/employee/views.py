@@ -6,9 +6,9 @@ from .forms import MemberSelectionForm
 from main.models import *
 from django.core.exceptions import ObjectDoesNotExist
 
+
 class IndexView(TemplateView):
     template_name = 'employee/index.html'  # 使用するテンプレートファイル
-
 class MemberSelectionView(View):
     def get(self, request):
         form = MemberSelectionForm()  # フォームをインスタンス化
