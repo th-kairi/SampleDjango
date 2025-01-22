@@ -75,7 +75,7 @@ class EmployeeCreateView(CreateView):
     def form_valid(self, form):
         # パスワードを暗号化して保存する処理（もし必要な場合）
         employee = form.save(commit=False)
-        employee.set_password(form.cleaned_data['password'])
+        employee.set_password(form.cleaned_data['password1'])
         employee.save()
         messages.success(self.request, '職員が作成されました。')
         return redirect(self.success_url)
