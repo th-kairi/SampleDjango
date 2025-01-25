@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="my-4">職員一括作成</h1>
+
+    <!-- エラーメッセージの表示部分 -->
+    {% if formset.errors %}
+      <div class="alert alert-danger">
+          <ul>
+          {% for error in formset.errors %}
+              <li>{{ error }}</li>
+          {% endfor %}
+          </ul>
+      </div>
+    {% endif %}
+
+    <!-- フォーム全体を囲む -->
+    <form method="post">
+      {% csrf_token %}
+      
+      <!-- 入力フィールドのテーブル -->
+      <table class="table" id="employee-table">
+        <thead>
+          <tr>
+            <th>氏名</th>
+            <th>メールアドレス</th>
+            <th>部門</th>
+            <th>部署</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 最初の行を作成（空の入力欄を持つ行） -->
+          <tr>
+            <td><input type="text" name="name" class="form-control" id="name-1" required></td>
+            <td><input type="email" name="email" class="form-control" id="email-1" required></td>
+            <td><input type="text" name="division" class="form-control" id="division-1"></td>
+            <td><input type="text" name="team" class="form-control" id="team-1"></td>
+            <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- フォーム送信ボタン -->
+      <button type="submit" class="btn btn-primary">一括作成</button>
+    </form>
+
+    <!-- 戻るボタン -->
+    <div class="mt-3">
+      <a href="{% url 'employee:index' %}" class="btn btn-secondary">戻る</a>
+    </div>
+  </div>
+
+  <script>
+    // ページの読み込みが完了したら処理を開始
+    document.addEventListener('DOMContentLoaded', function () {
+      let rowCount = 1; // 最初の行は1行目から始める
+      const tableBody = document.querySelector('#employee-table tbody'); // tbodyの部分を取得
+
+      // Enterキーが押されたときに新しい行を追加する処理
+      tableBody.addEventListener('keydown', function (event) {
+        const target = event.target; // 入力された要素（氏名、メールアドレスなど）
+
+        // Enterキーが押され、かつ、対象がinputフィールドの場合
+        if (event.key === 'Enter' && target.tagName === 'INPUT') {
+          // 行を追加
+          rowCount++; // 行数を1増やす
+          const newRow = document.createElement('tr'); // 新しい行を作成
+          newRow.innerHTML = `
+            <td><input type="text" name="name" class="form-control" id="name-${rowCount}" required></td>
+            <td><input type="email" name="email" class="form-control" id="email-${rowCount}"></td>
+            <td><input type="text" name="division" class="form-control" id="division-${rowCount}"></td>
+            <td><input type="text" name="team" class="form-control" id="team-${rowCount}"></td>
+            <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
+          `;
+          tableBody.appendChild(newRow); // 新しい行をテーブルに追加
+
+          // 次の行の氏名フィールドにフォーカスを移動
+          const nextNameField = document.getElementById(`name-${rowCount}`);
+          nextNameField.focus();
+
+          // Enterキーによるデフォルトの動作（フォームの送信）を無効化
+          event.preventDefault();
+        }
+      });
+
+      // 削除ボタンを押したときに行を削除する処理
+      tableBody.addEventListener('click', function (event) {
+        // クリックされた要素が削除ボタンである場合
+        if (event.target.classList.contains('remove-row')) {
+          const row = event.target.closest('tr'); // 親の行を取得
+          row.remove(); // 行を削除
+        }
+      });
+
+      // クリップボードから貼り付けたデータを処理する
+      const inputFields = document.querySelectorAll("input[name='name'], input[name='email'], input[name='division'], input[name='team']");
+      inputFields.forEach(field => {
+        field.addEventListener('paste', function (event) {
+          // ペースト時にデフォルトの貼り付け動作を無効にする
+          event.preventDefault();
+
+          // クリップボードのデータを取得
+          const clipboardData = event.clipboardData.getData('Text');
+          const rows = clipboardData.split('\n'); // 改行を基準にデータを分ける
+
+          // 各行（データ）の処理
+          rows.forEach((row, rowIndex) => {
+            const columns = row.split('\t'); // タブを基準にデータを分ける
+
+            // 必要なデータが足りていれば、名前、メールアドレス、部門、部署を設定
+            if (columns.length >= 2) {
+              const name = columns[0]; // 氏名
+              const email = columns[1]; // メールアドレス
+              const division = columns[2] || ''; // 部門（存在しない場合は空文字）
+              const team = columns[3] || ''; // 部署（存在しない場合は空文字）
+
+              // 最初の行にデータを挿入
+              if (rowIndex === 0) {
+                document.getElementById('name-1').value = name;
+                document.getElementById('email-1').value = email;
+                document.getElementById('division-1').value = division;
+                document.getElementById('team-1').value = team;
+              } else {
+                // 新しい行を追加
+                rowCount++;
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                  <td><input type="text" name="name" class="form-control" id="name-${rowCount}" value="${name}" required></td>
+                  <td><input type="email" name="email" class="form-control" id="email-${rowCount}" value="${email}"></td>
+                  <td><input type="text" name="division" class="form-control" id="division-${rowCount}" value="${division}"></td>
+                  <td><input type="text" name="team" class="form-control" id="team-${rowCount}" value="${team}"></td>
+                  <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
+                `;
+                tableBody.appendChild(newRow); // 新しい行をテーブルに追加
+              }
+            }
+          });
+
+          // 最後の行の氏名フィールドにフォーカスを移動
+          const lastNameField = document.getElementById(`name-${rowCount}`);
+          if (lastNameField) {
+            lastNameField.focus();
+          }
+        });
+      });
+    });
+  </script>
+
+{% endblock %}

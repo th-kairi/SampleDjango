@@ -31,8 +31,12 @@
                         
                     </li>
                 {% endif %}
+                <!-- 職員作成メニュー -->
                 <li class="list-group-item">
-                    <a href="{% url 'employee:employee_create' %}" class="btn btn-primary">新しい職員を作成</a>
+                    <a class="nav-link" href="{% url 'employee:employee_create' %}">職員作成</a>
+                </li>
+                <li class="list-group-item">
+                    <a class="nav-link" href="{% url 'employee:bulk_employee_create' %}">一括登録</a>                    
                 </li>
                 <li class="list-group-item"><a href="{% url 'accounts:logout' %}">ログアウト</a></li>
             {% else %}

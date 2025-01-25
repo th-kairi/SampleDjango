@@ -49,11 +49,11 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.name}({self.email})"
     
-    def save(self, *args, **kwargs):
-        # パスワードが暗号化されている場合は、フラグをTrueに設定
-        if self.password and not self.is_password_encrypted:
-            self.is_password_encrypted = True
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # パスワードが暗号化されている場合は、フラグをTrueに設定
+    #     if self.password and not self.is_password_encrypted:
+    #         self.is_password_encrypted = True
+    #     super().save(*args, **kwargs)
     
 # 職員モデル（CustomUserを継承）
 class Employee(CustomUser):

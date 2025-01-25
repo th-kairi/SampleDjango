@@ -85,3 +85,34 @@ class EmployeeCreateView(CreateView):
         messages.error(self.request, '職員作成に失敗しました。')
         # フォームが無効な場合、エラーメッセージを表示
         return self.render_to_response(self.get_context_data(form=form))
+    
+# 職員一括登録 
+class BulkEmployeeCreateView(View):
+    def get(self, request):
+        formset = BulkEmployeeFormSet()
+        return render(request, 'accounts/bulk_employee_create.html', {'formset': formset})
+
+    def post(self, request):
+        
+        print('==========================================================================')  # デバッグ用
+        print('BulkEmployeeCreateView:post')  # デバッグ用
+        print('request.POST:', request.POST)
+        print('BulkEmployeeFormSet(request.POST):', BulkEmployeeFormSet(request.POST))
+        formset = BulkEmployeeFormSet(request.POST)
+        print('formset:',formset)
+        
+        # フォームが有効かどうかを確認
+        if formset.is_valid():
+            print('formset.is_valid()')  # デバッグ用エラーログ
+            i=0
+            # 各フォームを保存
+            for form in formset:
+                print('for form in formset:', ++i)
+                # form.save()
+            messages.success(request, '職員が一括で作成されました。')
+            return redirect('employee:index')  # 作成後にリダイレクト
+
+        # エラーが発生した場合は再度フォームを表示
+        messages.error(request, '職員作成に失敗しました。再度入力を確認してください。')
+        print(formset.errors)  # デバッグ用エラーログ
+        return render(request, 'accounts/bulk_employee_create.html', {'formset': formset})
