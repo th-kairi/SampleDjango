@@ -86,33 +86,59 @@ class EmployeeCreateView(CreateView):
         # フォームが無効な場合、エラーメッセージを表示
         return self.render_to_response(self.get_context_data(form=form))
     
-# 職員一括登録 
+# 職員一括登録
 class BulkEmployeeCreateView(View):
+    # GETリクエストを処理するメソッド
     def get(self, request):
+        # フォームセットのインスタンスを作成（フォームセットは複数のフォームをまとめて処理できるもの）
         formset = BulkEmployeeFormSet()
+
+        # フォームセットをテンプレートに渡して、ユーザーに表示する
         return render(request, 'accounts/bulk_employee_create.html', {'formset': formset})
 
+    # POSTリクエストを処理するメソッド
     def post(self, request):
-        
-        print('==========================================================================')  # デバッグ用
-        print('BulkEmployeeCreateView:post')  # デバッグ用
-        print('request.POST:', request.POST)
-        print('BulkEmployeeFormSet(request.POST):', BulkEmployeeFormSet(request.POST))
-        formset = BulkEmployeeFormSet(request.POST)
-        print('formset:',formset)
-        
-        # フォームが有効かどうかを確認
-        if formset.is_valid():
-            print('formset.is_valid()')  # デバッグ用エラーログ
-            i=0
-            # 各フォームを保存
-            for form in formset:
-                print('for form in formset:', ++i)
-                # form.save()
-            messages.success(request, '職員が一括で作成されました。')
-            return redirect('employee:index')  # 作成後にリダイレクト
+        # デバッグ用: POSTされたデータを確認
+        print('==========================================================================')
+        print('BulkEmployeeCreateView:post')  # このメソッドが呼ばれたことを確認するためのログ
+        print('request.POST:', request.POST)  # POSTデータ（フォームに入力されたデータ）の内容を表示
+        print('-------------------------------------')
+        print("request.POST.getlist('name'):", request.POST.getlist('name'))  
+        print("request.POST['form-TOTAL_FORMS']:", request.POST['form-TOTAL_FORMS'])
+        print('-------------------------------------')
 
-        # エラーが発生した場合は再度フォームを表示
+        # TOTAL_FORMSを動的に設定
+        num_entries = len(request.POST.getlist('name'))  # nameのリストから職員数を取得
+        request.POST = request.POST.copy()  # POSTデータをコピーして変更可能にする
+        request.POST['form-TOTAL_FORMS'] = str(num_entries)  # TOTAL_FORMSを職員数に設定
+        
+        # POSTデータを使ってフォームセットを再生成
+        formset = BulkEmployeeFormSet(request.POST)
+
+        # フォームセットが正常にバリデーションを通過しているか確認
+        print('formset:', formset)  # フォームセットが適切に作成されているかを確認するログ
+
+        # フォームセットが有効かどうかを確認
+        if formset.is_valid():
+            print('formset.is_valid()')  # バリデーションが成功した場合のログ
+
+            # 有効なフォームがある場合、各フォームのデータを保存
+            for form in formset:
+                # 各フォームのデータを保存
+                # form.save() をコメントアウトしている場合は、ここに保存処理を追加
+                print(f"Saving form: {form.cleaned_data}")  # 保存するフォームのデータ（クリーニングされたデータ）を表示
+
+            # 成功メッセージをユーザーに通知
+            messages.success(request, '職員が一括で作成されました。')
+
+            # 成功したらリダイレクト（職員一覧ページなどへ遷移）
+            return redirect('employee:index')  # 'employee:index' は職員一覧ページへのURL名
+
+        # フォームセットが無効な場合、エラーメッセージを表示
         messages.error(request, '職員作成に失敗しました。再度入力を確認してください。')
-        print(formset.errors)  # デバッグ用エラーログ
+
+        # フォームセットのエラーメッセージをデバッグ用に表示
+        print(formset.errors)  # エラー内容をログに出力してデバッグ
+
+        # エラーが発生した場合は、再度フォームを表示（ユーザーが入力を修正できるようにする）
         return render(request, 'accounts/bulk_employee_create.html', {'formset': formset})

@@ -4,7 +4,8 @@
 <div class="container">
     <h1 class="my-4">職員一括作成</h1>
 
-    <!-- エラーメッセージの表示部分 -->
+    <!-- [修正点1] エラーメッセージの表示部分 -->
+    <!-- formset全体のエラーを表示 -->
     {% if formset.non_form_errors %}
     <div class="alert alert-danger">
         <ul>
@@ -15,6 +16,7 @@
     </div>
     {% endif %}
 
+    <!-- 各フォームのエラーを個別に表示 -->
     {% for form in formset %}
     {% if form.errors %}
     <div class="alert alert-danger">
@@ -27,12 +29,13 @@
     {% endif %}
     {% endfor %}
 
-
-    <!-- フォーム全体を囲む -->
+    <!-- フォーム全体 -->
     <form method="post">
         {% csrf_token %}
+        <!-- [修正点2] 管理フォームを1箇所に統一 -->
         {{ formset.management_form }}
-        <!-- 入力フィールドのテーブル -->
+
+        <!-- フォームの入力フィールドを表示 -->
         <table class="table" id="employee-table">
             <thead>
                 <tr>
@@ -44,23 +47,13 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- 最初の行を作成（空の入力欄を持つ行） -->
+                <!-- [修正点3] 既存のフォームを1行ずつ表示 -->
                 {% for form in formset %}
                 <tr>
-                    <td><input type="text" name="name" class="form-control" id="name-1" required></td>
-                    <td><input type="email" name="email" class="form-control" id="email-1" required></td>
-                    <td><input type="text" name="division" class="form-control" id="division-1"></td>
-                    <td><input type="text" name="team" class="form-control" id="team-1"></td>
-                    <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
-                </tr>
-                {% empty %}
-                <!-- フォームセットが空の場合は、最低でも1行を表示 -->
-                <tr>
-                    <td>{{ formset.management_form }}</td> <!-- フォームセット管理用 -->
-                    <td><input type="text" name="name" class="form-control" required></td>
-                    <td><input type="email" name="email" class="form-control" required></td>
-                    <td><input type="text" name="division" class="form-control"></td>
-                    <td><input type="text" name="team" class="form-control"></td>
+                    <td>{{ form.name }}</td>
+                    <td>{{ form.email }}</td>
+                    <td>{{ form.division }}</td>
+                    <td>{{ form.team }}</td>
                     <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
                 </tr>
                 {% endfor %}
@@ -77,81 +70,58 @@
     </div>
 </div>
 
+<!-- JavaScriptで行追加/削除やクリップボードペースト処理 -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // フォームセットのtbody要素を取得
-    const formsetBody = document.getElementById('formset-body');
+    document.addEventListener('DOMContentLoaded', function () {
+        let rowCount = {{ formset.total_form_count }}; // [修正点4] 初期フォーム数をサーバー側から取得
+        const tableBody = document.querySelector('#employee-table tbody'); // tbody要素を取得
+        const totalFormsField = document.querySelector('[name="form-TOTAL_FORMS"]'); // TOTAL_FORMSフィールドを取得
 
-    // 現在のフォームの数を取得（管理フォームのTOTAL_FORMS）
-    const formCountInput = document.getElementById('id_form-TOTAL_FORMS');
-    let formCount = parseInt(formCountInput.value);
+        // [修正点5] 行追加機能の定義
+        const addRow = () => {
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" name="form-${rowCount}-name" class="form-control" required></td>
+                <td><input type="email" name="form-${rowCount}-email" class="form-control" required></td>
+                <td><input type="text" name="form-${rowCount}-division" class="form-control"></td>
+                <td><input type="text" name="form-${rowCount}-team" class="form-control"></td>
+                <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
+            `;
+            tableBody.appendChild(newRow); // 新しい行をtbodyに追加
+            rowCount++; // 行数を更新
+            totalFormsField.value = rowCount; // TOTAL_FORMSを更新
+        };
 
-    // クリップボードから貼り付けた内容を処理するイベントリスナーを追加
-    formsetBody.addEventListener('paste', function(event) {
-        // クリップボードから貼り付けられたテキストを取得
-        const clipboardData = event.clipboardData || window.clipboardData;
-        const text = clipboardData.getData('Text');
-
-        // 貼り付けられたテキストを行ごとに分割（改行コード '\n' で分割）
-        const lines = text.split('\n');
-
-        // 行ごとに処理
-        lines.forEach((line) => {
-            // 各行をタブ区切りで分割して、名前、メールアドレス、部門、部署を取得
-            const columns = line.split('\t');
-            
-            if (columns.length >= 4) {  // 必要なカラム数（4列）が揃っている場合
-                // フォームを追加
-                addForm(columns[0], columns[1], columns[2], columns[3]);
+        // [修正点6] 行削除機能の定義
+        tableBody.addEventListener('click', function (event) {
+            if (event.target.classList.contains('remove-row')) {
+                const row = event.target.closest('tr'); // 削除対象の行を取得
+                row.remove(); // 行を削除
+                rowCount--; // 行数を減少
+                totalFormsField.value = rowCount; // TOTAL_FORMSを更新
             }
         });
 
-        // 貼り付け後、フォーム数を更新
-        formCountInput.value = formCount;
-        
-        // デフォルトの貼り付け動作を防ぐ
-        event.preventDefault();
+        // [修正点7] クリップボードペースト時の処理
+        const handlePaste = (event) => {
+            event.preventDefault(); // デフォルトのペースト動作を無効化
+            const clipboardData = event.clipboardData.getData('Text'); // ペーストされたテキストを取得
+            const rows = clipboardData.split('\n'); // 改行で分割して行データを生成
+
+            rows.forEach((row, index) => {
+                const columns = row.split('\t'); // 各行をタブで分割
+                if (columns.length >= 2) {
+                    addRow(); // 必要に応じて新しい行を追加
+                    const inputs = tableBody.querySelectorAll(`tr:nth-last-child(1) input`);
+                    inputs[0].value = columns[0]; // 氏名
+                    inputs[1].value = columns[1]; // メールアドレス
+                    if (columns[2]) inputs[2].value = columns[2]; // 部門
+                    if (columns[3]) inputs[3].value = columns[3]; // 部署
+                }
+            });
+        };
+
+        document.querySelector('#employee-table').addEventListener('paste', handlePaste);
     });
-
-    // 新しいフォームを追加する関数
-    function addForm(name, email, division, team) {
-        // 新しいフォーム行のtr要素を作成
-        const newFormRow = document.createElement('tr');
-        newFormRow.classList.add('form-row');
-        
-        // 新しいフォームのHTMLを設定（インデックスとともにフォームの名前を指定）
-        newFormRow.innerHTML = `
-            <td><input type="text" name="form-${formCount}-name" value="${name}" maxlength="100" id="id_form-${formCount}-name"></td>
-            <td><input type="email" name="form-${formCount}-email" value="${email}" maxlength="100" id="id_form-${formCount}-email"></td>
-            <td><input type="text" name="form-${formCount}-division" value="${division}" maxlength="100" id="id_form-${formCount}-division"></td>
-            <td><input type="text" name="form-${formCount}-team" value="${team}" maxlength="100" id="id_form-${formCount}-team"></td>
-            <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
-        `;
-        
-        // 新しく作成したフォームをformsetBody（tbody）に追加
-        formsetBody.appendChild(newFormRow);
-
-        // フォームの数をインクリメント
-        formCount++;
-    }
-
-    // フォームの削除処理
-    formsetBody.addEventListener('click', function(event) {
-        // クリックされた要素が削除ボタンであった場合
-        if (event.target.classList.contains('remove-row')) {
-            // 対応するフォーム行（tr）を削除
-            const row = event.target.closest('tr');
-            row.remove();
-
-            // 削除後、フォームの数をデクリメント
-            formCount--;
-
-            // 削除後、TOTAL_FORMSを更新
-            formCountInput.value = formCount;
-        }
-    });
-});
-
 </script>
-
 {% endblock %}
