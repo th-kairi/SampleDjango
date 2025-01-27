@@ -61,7 +61,7 @@
         </table>
         
         <!--  -->
-        <input type="hidden" name="form-TOTAL_FORMS" value="0" id="id_form-TOTAL_FORMS">
+        <id=id_hidde-fild></id>
 
         <!-- フォーム送信ボタン -->
         <!-- <button type="submit" class="btn btn-primary">一括作成</button> -->
@@ -126,6 +126,8 @@
             if (totalFormsField) {
                 totalFormsField.value = rowCount;
                 console.log(`フォーム送信前にform-TOTAL_FORMSが更新されました: ${totalFormsField.value}`);
+                
+                // <input type="hidden" name="form-TOTAL_FORMS" value="0" id="id_form-TOTAL_FORMS">                    
             }
 
             // フォームを送信
