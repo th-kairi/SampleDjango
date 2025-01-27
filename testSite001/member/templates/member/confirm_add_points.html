@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>ポイント追加の確認</h2>
+    <p>{{ points_to_add }}ポイントを追加しますか？</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">確認</button>
+        <a href="{% url 'member:add_points' %}" class="btn btn-secondary">キャンセル</a>
+    </form>
+</div>
+{% endblock %}

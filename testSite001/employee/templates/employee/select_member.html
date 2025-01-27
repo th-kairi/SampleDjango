@@ -3,10 +3,25 @@
 {% block content %}
     <div class="container">
         <h2>会員を選択してください</h2>
+        {% if messages %}
+            <div class="alert alert-danger" role="alert">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                {{ form.as_p }}  <!-- フォームをパラグラフごとに表示 -->
+                <select name="member" >
+                    console.log("=================")
+                    console.log("member_list:",member_list)
+                    <option value="" disabled selected> -- 会員を選択してください --</option>
+                    {% for member in member_list %}
+                        <option value="{{ member.member_num }}">{{ member.name }}_({{ member.member_num}})</option>
+                    {% endfor %}
+                </select>
             </div>
             <button type="submit" class="btn btn-primary">次へ</button>
         </form>

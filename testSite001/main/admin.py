@@ -118,3 +118,44 @@ class ShiftScheduleAdmin(admin.ModelAdmin):
     ordering = ('date',)
     
 admin.site.register(ShiftSchedule, ShiftScheduleAdmin)
+
+
+
+# 商品モデルの管理画面カスタマイズ
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'seller', 'price', 'created_at')  # 一覧画面で表示する項目
+    list_filter = ('seller', 'created_at')  # フィルタリングオプション
+    search_fields = ('name', 'description', 'seller__name')  # 検索対象項目
+    ordering = ('-created_at',)  # ソート順
+    date_hierarchy = 'created_at'  # 日付階層ナビゲーション
+
+# 商品画像モデルの管理画面カスタマイズ
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product', 'uploaded_at')  # 一覧画面で表示する項目
+    list_filter = ('product',)  # フィルタリングオプション
+    search_fields = ('product__name',)  # 検索対象項目
+
+# ウォレットモデルの管理画面カスタマイズ
+@admin.register(Wallet)
+class WalletAdmin(admin.ModelAdmin):
+    list_display = ('id', 'member', 'balance')  # 一覧画面で表示する項目
+    search_fields = ('member__name', 'member__member_num')  # 検索対象項目
+    list_filter = ('balance',)  # フィルタリングオプション
+    ordering = ('-balance',)  # ソート順
+
+# 注文モデルの管理画面カスタマイズ
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'buyer', 'total_price', 'created_at')  # 一覧画面で表示する項目
+    list_filter = ('buyer', 'created_at')  # フィルタリングオプション
+    search_fields = ('buyer__name', 'buyer__member_num')  # 検索対象項目
+    date_hierarchy = 'created_at'  # 日付階層ナビゲーション
+
+# 注文商品モデルの管理画面カスタマイズ
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'product', 'quantity')  # 一覧画面で表示する項目
+    search_fields = ('order__buyer__name', 'product__name')  # 検索対象項目
+    list_filter = ('product',)  # フィルタリングオプション

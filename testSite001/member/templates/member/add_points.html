@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="mb-4">ポイント追加</h2>
+            <p class="text-muted">現在の保有ポイント: <strong>{{ wallet.balance }}</strong></p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group mb-4">
+                    <label for="pointInput" class="form-label">追加ポイント:</label>
+                    <input type="number" id="pointInput" name="points" class="form-control" placeholder="ポイントを入力" min="0">
+                </div>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for value in point_values %}
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-primary"
+                        onclick="setPointValue({{ value }})">
+                        {{ value }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-success w-100">追加する</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setPointValue(value) {
+        const inputField = document.getElementById('pointInput');
+        if (inputField) {
+            inputField.value = value;
+        }
+    }
+</script>
+{% endblock %}

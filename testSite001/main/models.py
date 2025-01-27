@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import random
 
-# Create your models here.
 
 # 役職
 class position(models.Model):
@@ -116,6 +115,12 @@ class Member(CustomUser):
     def __str__(self):
         return f"{self.name}({self.member_num})"
     
+    def save(self, *args, **kwargs):
+        # 会員が保存された後にWalletを作成
+        is_new = self.pk is None  # 新しいインスタンスかどうかを確認
+        super().save(*args, **kwargs)
+        if is_new:
+            Wallet.objects.get_or_create(member=self)  # Walletが存在しない場合に作成
 
 # 勲章モデル
 class Medal(models.Model):
@@ -223,3 +228,100 @@ class ShiftSchedule(models.Model):
     class Meta:
         verbose_name_plural = "シフトスケジュール"
         unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ
+
+# 商品モデル（1商品につき在庫は1点、商品画像は別モデルで管理）
+class Product(models.Model):
+    seller = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="products", verbose_name="出品者")
+    # 商品名を表すフィールド（最大255文字）
+    name = models.CharField(max_length=255, verbose_name="商品名")
+    # 商品の詳細な説明を格納するフィールド
+    description = models.TextField(verbose_name="商品説明")
+    # 商品の価格（小数点第2位まで対応）
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="価格")
+    # 商品の出品日時
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="出品日時")
+    # 商品情報の更新日時
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+
+    class Meta:
+        verbose_name_plural = "商品"
+        ordering = ['-created_at']  # 最新の商品を上に表示
+
+    def __str__(self):
+        # 管理画面などで商品名を表示するための文字列
+        return f"{self.name} - {self.seller.name}"
+
+
+# 商品画像モデル（1商品に対して複数の画像を紐付け可能）
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images", verbose_name="商品")
+    # アップロードされた商品画像のパス（商品ごとにフォルダを分ける）
+    image = models.ImageField(upload_to="products/images/", verbose_name="商品画像")
+    # 商品画像のアップロード日時
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="アップロード日時")
+
+    class Meta:
+        verbose_name_plural = "商品画像"
+
+    def __str__(self):
+        # 管理画面などで画像の関連商品名を表示する
+        return f"Image for {self.product.name}"
+
+
+# 購入用ポイントを管理するウォレットモデル
+class Wallet(models.Model):
+    member = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="wallet", verbose_name="会員")
+    # 現在のポイント残高を格納するフィールド
+    balance = models.PositiveIntegerField(default=0, verbose_name="ポイント残高")
+
+    class Meta:
+        verbose_name_plural = "ウォレット"
+
+    def __str__(self):
+        # 会員名とポイント残高を表示
+        return f"{self.member.name}'s Wallet - {self.balance} points"
+
+    # ポイントを追加するメソッド
+    def add_points(self, amount):
+        self.balance += amount
+        self.save()
+
+    # ポイントを使用するメソッド
+    def use_points(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+            self.save()
+            return True
+        return False
+
+
+# 購入履歴を管理する注文モデル
+class Order(models.Model):
+    buyer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="orders", verbose_name="購入者")
+    # 注文総額を格納
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="合計金額")
+    # 注文日時
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="注文日時")
+
+    class Meta:
+        verbose_name_plural = "注文"
+        ordering = ['-created_at']  # 最新の注文を上に表示
+
+    def __str__(self):
+        # 管理画面などで購入者名と注文IDを表示
+        return f"Order #{self.id} by {self.buyer.name}"
+
+
+# 注文に紐付く商品の詳細情報を管理するモデル
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", verbose_name="注文")
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, verbose_name="商品")
+    # 注文した商品の数量（1出品1在庫の場合、常に1となる）
+    quantity = models.PositiveIntegerField(default=1, verbose_name="数量")
+
+    class Meta:
+        verbose_name_plural = "注文商品"
+
+    def __str__(self):
+        # 管理画面などで注文IDと商品名を表示
+        return f"Order #{self.order.id} - {self.product.name}"

@@ -10,21 +10,21 @@ class IndexView(TemplateView):
 
 class MemberSelectionView(View):
     def get(self, request):
-        form = MemberSelectionForm()  # フォームをインスタンス化
-        return render(request, 'employee/select_member.html', {'form': form})
+        # 会員情報を取得
+        member_list = Member.objects.all()
+        return render(request, 'employee/select_member.html', {'member_list': member_list})
 
     def post(self, request):
-        form = MemberSelectionForm(request.POST)
-        if form.is_valid():
-            member = form.cleaned_data['member']
-            if member:  # member が存在することを確認
-                # 会員選択後に勲章選択画面にリダイレクト
-                return redirect('employee:acquired_medals', member_num=member.member_num)
-            else:
-                # member が None の場合はエラーメッセージを表示
-                messages.error(request, "会員が正しく選択されていません。")
-                return render(request, 'employee/select_member.html', {'form': form})
-        return render(request, 'employee/select_member.html', {'form': form})
+        member = request.POST.get('member')
+        if member:  # member が存在することを確認
+            # 会員選択後に勲章選択画面にリダイレクト
+            return redirect('employee:acquired_medals', member_num=member)
+        else:
+            # 会員情報を取得
+            member_list = Member.objects.all()
+            # member が None の場合はエラーメッセージを表示
+            messages.error(request, "会員が正しく選択されていません。")
+            return render(request, 'employee/select_member.html', {'member_list': member_list})
     
 class AcquiredMedalsView(View):
     def get(self, request, member_num):
