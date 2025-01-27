@@ -29,6 +29,17 @@ class BulkEmployeeCreateForm(forms.ModelForm):
     division = forms.CharField(max_length=100, required=False)  # 部署の自由入力
     team = forms.CharField(max_length=100, required=False)  # 部門の自由入力
 
+    
+    # 入力フォームの属性の設定
+    # bootstrap を利用する為Classの設定を使ってCSSを適応する
+    def __init__(self, *args, **kwrags):
+        super().__init__(*args, **kwrags)
+        # class の設定（htmlから転記）
+        self.fields["name"].widget.attrs["class"] = "form-control"
+        self.fields["email"].widget.attrs["class"] = "form-control"
+        self.fields["division"].widget.attrs["class"] = "form-control"
+        self.fields["team"].widget.attrs["class"] = "form-control"
+
     class Meta:
         model = Employee
         fields = ['name', 'email', 'division', 'team']

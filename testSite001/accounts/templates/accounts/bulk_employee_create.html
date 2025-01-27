@@ -59,9 +59,14 @@
                 {% endfor %}
             </tbody>
         </table>
+        
+        <!--  -->
+        <input type="hidden" name="form-TOTAL_FORMS" value="0" id="id_form-TOTAL_FORMS">
 
         <!-- フォーム送信ボタン -->
-        <button type="submit" class="btn btn-primary">一括作成</button>
+        <!-- <button type="submit" class="btn btn-primary">一括作成</button> -->
+        <button type="button" id="submit-button" class="btn btn-primary">一括作成</button>
+
     </form>
 
     <!-- 戻るボタン -->
@@ -73,36 +78,61 @@
 <!-- JavaScriptで行追加/削除やクリップボードペースト処理 -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        let rowCount = {{ formset.total_form_count }}; // [修正点4] 初期フォーム数をサーバー側から取得
-        const tableBody = document.querySelector('#employee-table tbody'); // tbody要素を取得
-        const totalFormsField = document.querySelector('[name="form-TOTAL_FORMS"]'); // TOTAL_FORMSフィールドを取得
+        const form = document.querySelector('form');
+        const submitButton = document.querySelector('#submit-button'); // 「一括作成」ボタン
+        // let rowCount = {{ formset.total_form_count }}; // [修正点4] 初期フォーム数をサーバー側から取得
+        let rowCount = parseInt("{{ formset.total_form_count|default:0 }}", 10); // 数値として扱う
 
-        // [修正点5] 行追加機能の定義
+        const tableBody = document.querySelector('#employee-table tbody'); // tbody要素を取得
+        // TOTAL_FORMSフィールドを取得
+        // const totalFormsField = document.querySelector('[name="form-TOTAL_FORMS"]'); 
+        const totalFormsField = document.querySelector('#id_form-TOTAL_FORMS');
+
+        // 行追加機能の定義
         const addRow = () => {
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td><input type="text" name="form-${rowCount}-name" class="form-control" required></td>
-                <td><input type="email" name="form-${rowCount}-email" class="form-control" required></td>
-                <td><input type="text" name="form-${rowCount}-division" class="form-control"></td>
-                <td><input type="text" name="form-${rowCount}-team" class="form-control"></td>
+                <td><input type="text" name="form-${rowCount}-name" class="form-control" id="id_form-${rowCount}-name" required></td>
+                <td><input type="email" name="form-${rowCount}-email" class="form-control" id="id_form-${rowCount}-email" required></td>
+                <td><input type="text" name="form-${rowCount}-division" class="form-control" id="id_form-${rowCount}-division"></td>
+                <td><input type="text" name="form-${rowCount}-team" class="form-control" id="id_form-${rowCount}-team"></td>
                 <td><button type="button" class="btn btn-danger remove-row">削除</button></td>
             `;
-            tableBody.appendChild(newRow); // 新しい行をtbodyに追加
-            rowCount++; // 行数を更新
-            totalFormsField.value = rowCount; // TOTAL_FORMSを更新
+            rowCount++; // 行数を増加
+            tableBody.appendChild(newRow); // 新しい行をテーブルに追加
+            updateTotalForms(); // form-TOTAL_FORMSの更新
         };
 
-        // [修正点6] 行削除機能の定義
+        // form-TOTAL_FORMSの値を更新する関数
+        const updateTotalForms = () => {
+            document.querySelector('#id_form-TOTAL_FORMS').value = rowCount
+            console.log(document.querySelector('#id_form-TOTAL_FORMS').value);
+        };
+
+        // 行削除機能の定義
         tableBody.addEventListener('click', function (event) {
             if (event.target.classList.contains('remove-row')) {
                 const row = event.target.closest('tr'); // 削除対象の行を取得
                 row.remove(); // 行を削除
                 rowCount--; // 行数を減少
-                totalFormsField.value = rowCount; // TOTAL_FORMSを更新
+                updateTotalForms(); // form-TOTAL_FORMSの更新
             }
         });
 
-        // [修正点7] クリップボードペースト時の処理
+
+        // 「一括作成」ボタンのクリックイベント
+        submitButton.addEventListener('click', function () {
+            // hiddenフィールドの値を更新
+            if (totalFormsField) {
+                totalFormsField.value = rowCount;
+                console.log(`フォーム送信前にform-TOTAL_FORMSが更新されました: ${totalFormsField.value}`);
+            }
+
+            // フォームを送信
+            form.submit();
+        });
+
+        // クリップボードペースト時の処理
         const handlePaste = (event) => {
             event.preventDefault(); // デフォルトのペースト動作を無効化
             const clipboardData = event.clipboardData.getData('Text'); // ペーストされたテキストを取得
@@ -111,12 +141,12 @@
             rows.forEach((row, index) => {
                 const columns = row.split('\t'); // 各行をタブで分割
                 if (columns.length >= 2) {
-                    addRow(); // 必要に応じて新しい行を追加
                     const inputs = tableBody.querySelectorAll(`tr:nth-last-child(1) input`);
                     inputs[0].value = columns[0]; // 氏名
                     inputs[1].value = columns[1]; // メールアドレス
                     if (columns[2]) inputs[2].value = columns[2]; // 部門
                     if (columns[3]) inputs[3].value = columns[3]; // 部署
+                    addRow(); // 必要に応じて新しい行を追加
                 }
             });
         };
