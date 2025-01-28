@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.views import View
-from .forms import MemberSelectionForm
 from main.models import *
 
 class IndexView(TemplateView):
