@@ -1,10 +1,18 @@
+# テンプレート描画とリダイレクトに使用
 from django.shortcuts import render, redirect
+from django.urls import reverse
+# クラスベースビューを作成するための基底クラス
 from django.views.generic import TemplateView, ListView
-from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+# 入力処理を作成する際に使うフォーム
 from django.forms import *
+# モデルインポート
 from main.models import *
-
+from .forms import *
 
 class IndexView(TemplateView):
     template_name = 'member/index.html'  # 使用するテンプレートファイル
@@ -86,46 +94,43 @@ class ProductListView(ListView):
         if query:
             return Product.objects.filter(name__icontains=query)  # 部分一致検索
         return Product.objects.all()  # 全件表示
-
-# 商品登録ビュー
-class ProductRegisterView(View):
-    class ProductForm(ModelForm):
-        """
-        商品情報フォーム
-        """
-        class Meta:
-            model = Product
-            fields = ['name', 'description', 'price']
+    
+# 商品登録用のビュー関数
+class ProductCreateView(LoginRequiredMixin, View):
+    """
+    商品登録を行うビュー。
+    ユーザーがログインしている場合のみアクセス可能。
+    """
 
     def get(self, request):
-        product_form = self.ProductForm()
-        return render(request, 'products/register_product.html', {
-            'product_form': product_form,
-        })
-    
-    # 商品登録処理
+        """
+        GETリクエストを処理するメソッド。
+        フォームを表示する。
+        """
+        form = ProductForm()  # 新しいフォームを作成
+        return render(request, 'products/product_create.html', {'product_form': form})
+
     def post(self, request):
-        product_form = self.ProductForm(request.POST)
+        """
+        POSTリクエストを処理するメソッド。
+        商品の登録を行う。
+        """
+        form = ProductForm(request.POST)  # POSTデータを使用してフォームを作成
+        if form.is_valid():  # フォームが有効である場合
+            product = form.save(commit=False)  # フォームのデータを保存する前に一時保存
+            product.seller = request.user.member  # ログインユーザーを商品出品者として設定
+            product.save()  # 商品情報を保存
+            self._handle_images(request, product)  # 画像を処理
+            return redirect(reverse('member:product_list'))  # 商品リストページにリダイレクト
+        else:
+            return render(request, 'products/product_create.html', {'product_form': form})
 
-        if product_form.is_valid():
-            # 商品データを保存
-            product = product_form.save(commit=False)
-
-            # ログインユーザーが Member モデルか確認して取得
-            try:
-                member_instance = Member.objects.get(pk=request.user.pk)
-            except Member.DoesNotExist:
-                return redirect('member:index')
-
-            product.seller = member_instance
-            product.save()
-
-            # 画像データを保存
-            for image in request.FILES.getlist('images'):  # HTML側で name="images" を設定
-                print("image:",image)
-                ProductImage.objects.create(product=product, image=image)
-
-            return redirect('member:product_list')
-        
-
-
+    def _handle_images(self, request, product):
+        """
+        画像を処理する内部メソッド。
+        画像を保存する。
+        """
+        if 'images' in request.FILES:  # 'images' キーがリクエストに存在するか確認
+            images = request.FILES.getlist('images')  # リクエストから画像ファイルを取得
+            for image in images:  # 各画像について処理を実行
+                ProductImage.objects.create(product=product, image=image)  # 画像を保存

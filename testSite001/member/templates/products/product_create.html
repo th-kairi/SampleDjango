@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <!-- ページタイトル -->
+    <h2 class="text-2xl font-bold mb-4">商品登録</h2>
+
+    <!-- フォーム要素の開始 -->
+    <form id="productForm">
+        {% csrf_token %} <!-- CSRFトークンの追加: セキュリティ保護のため必須 -->
+
+        <!-- 商品画像アップロードセクション -->
+        <div id="image-upload-section" class="mb-4">
+            <!-- 商品画像ラベル -->
+            <label class="block text-lg font-medium mb-2">商品画像:</label>
+
+            <!-- プレビュー画像と追加ボタンを表示するコンテナ -->
+            <div id="image-preview-container" class="d-flex gap-3 overflow-auto p-2 border rounded"
+                style="white-space: nowrap; max-width: 100%; height: 130px;">
+                <!-- プラスボタン: 画像選択をトリガーする役割 -->
+                <button type="button" id="add-image-button"
+                    class="d-flex align-items-center justify-content-center border border-dashed rounded bg-light text-muted"
+                    style="width: 100px; height: 100px;">
+                    ＋
+                </button>
+            </div>
+            <!-- 画像ファイル選択用の非表示のinput要素 -->
+            <input type="file" id="image-input" class="d-none" multiple>
+        </div>
+
+        <!-- 商品情報入力セクション -->
+        <!-- タイトル入力欄 -->
+        <div class="mb-4">
+            <label for="name" class="block text-lg font-medium mb-2">タイトル:</label>
+            <input type="text" name="name" id="name" class="form-control"> <!-- 商品のタイトルを入力 -->
+        </div>
+
+        <!-- 金額入力欄 -->
+        <div class="mb-4">
+            <label for="price" class="block text-lg font-medium mb-2">金額:</label>
+            <input type="number" name="price" id="price" class="form-control"> <!-- 商品の金額を入力 -->
+        </div>
+
+        <!-- 説明入力欄 -->
+        <div class="mb-4">
+            <label for="description" class="block text-lg font-medium mb-2">説明:</label>
+            <textarea name="description" id="description" class="form-control"></textarea> <!-- 商品の説明を入力 -->
+        </div>
+
+        <!-- ボタンセクション -->
+        <div class="d-flex gap-3">
+            <!-- 登録ボタン: フォームを送信 -->
+            <button type="submit" id="submit-button" class="btn btn-primary">登録する</button>
+            <!-- キャンセルボタン: 商品リストページに戻る -->
+            <a href="{% url 'member:product_list' %}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // DOM要素を取得
+        const imageInput = document.getElementById('image-input'); // 画像選択用のinput要素
+        const imagePreviewContainer = document.getElementById('image-preview-container'); // プレビュー画像を表示するコンテナ
+        const addImageButton = document.getElementById('add-image-button'); // プラスボタン
+        const productForm = document.getElementById('productForm'); // 商品登録フォーム
+        const csrfToken = '{{ csrf_token }}'; // CSRFトークンを取得
+
+        // 選択された画像を保持するための配列
+        const images = [];
+
+        // プラスボタンをクリックしたときの処理
+        addImageButton.addEventListener('click', () => {
+            // 非表示のinput要素をクリックさせてファイル選択をトリガー
+            imageInput.click();
+        });
+
+        // 画像が選択されたときの処理
+        imageInput.addEventListener('change', () => {
+            const files = Array.from(imageInput.files); // 選択されたファイルを配列として取得
+
+            files.forEach(file => {
+                const reader = new FileReader(); // ファイルを読み込むためのFileReaderを作成
+                reader.onload = (e) => {
+                    // プレビュー画像を作成
+                    const img = document.createElement('img');
+                    img.src = e.target.result; // 読み込んだ画像のデータをsrc属性に設定
+                    img.alt = "選択した画像"; // 代替テキストを設定
+                    img.className = "rounded border shadow-sm"; // スタイルを適用
+                    img.style = "width: 100px; height: 100px; object-fit: cover;";
+
+                    // 削除ボタンを作成
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = "button"; // ボタンのタイプを設定
+                    removeBtn.innerHTML = "×"; // ボタンに表示するテキスト
+                    removeBtn.className = "btn btn-danger btn-sm position-absolute"; // スタイルを適用
+                    removeBtn.style = "top: 5px; right: 5px;";
+                    removeBtn.onclick = () => {
+                        const index = images.indexOf(file); // ファイルのインデックスを取得
+                        if (index > -1) {
+                            images.splice(index, 1); // 配列からファイルを削除
+                        }
+                        container.remove(); // プレビュー要素を削除
+                    };
+
+                    // プレビュー画像と削除ボタンをまとめるコンテナを作成
+                    const container = document.createElement('div');
+                    container.className = "position-relative d-inline-block"; // スタイルを適用
+                    container.style = "width: 100px; height: 100px; margin-right: 10px;";
+                    container.appendChild(img); // コンテナに画像を追加
+                    container.appendChild(removeBtn); // コンテナに削除ボタンを追加
+
+                    // コンテナをプレビューコンテナに挿入
+                    imagePreviewContainer.insertBefore(container, addImageButton);
+
+                    // ファイルを配列に追加
+                    images.push(file);
+                };
+                reader.readAsDataURL(file); // ファイルをデータURLとして読み込む
+            });
+
+            imageInput.value = ''; // 再度ファイルを選択できるようにクリア
+        });
+
+        // フォーム送信時の処理
+        productForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // デフォルトの送信を防止
+
+            const formData = new FormData(); // フォームデータを作成
+            formData.append('csrfmiddlewaretoken', csrfToken); // CSRFトークンを追加
+            formData.append('name', document.getElementById('name').value); // タイトルを追加
+            formData.append('price', document.getElementById('price').value); // 金額を追加
+            formData.append('description', document.getElementById('description').value); // 説明を追加
+
+            // 選択された画像をフォームデータに追加（キーを 'images' に統一）
+            images.forEach(image => {
+                formData.append('images', image); // キーを統一する
+            });
+
+            // 非同期リクエストでフォームデータを送信
+            fetch(productForm.action, {
+                method: 'POST', // HTTPメソッドを指定
+                body: formData, // フォームデータを送信
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = "{% url 'member:product_list' %}"; // リダイレクト
+                } else {
+                    alert('エラーが発生しました。'); // エラー時のメッセージ
+                }
+            }).catch(error => {
+                console.error('エラー:', error); // コンソールにエラーを出力
+            });
+        });
+    });
+</script>
+{% endblock %}

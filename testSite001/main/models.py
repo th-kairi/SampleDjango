@@ -229,26 +229,27 @@ class ShiftSchedule(models.Model):
         verbose_name_plural = "シフトスケジュール"
         unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ
 
-# 商品モデル（1商品につき在庫は1点、商品画像は別モデルで管理）
+# 商品モデル（商品画像は別モデルで管理）
 class Product(models.Model):
-    seller = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="products", verbose_name="出品者")
-    # 商品名を表すフィールド（最大255文字）
+    # 出品者を表す外部キー
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="products", verbose_name="出品者")
+    # 商品名を表す文字列フィールド
     name = models.CharField(max_length=255, verbose_name="商品名")
-    # 商品の詳細な説明を格納するフィールド
+    # 商品の説明を表すテキストフィールド
     description = models.TextField(verbose_name="商品説明")
-    # 商品の価格（小数点第2位まで対応）
+    # 商品の価格を表す整数フィールド
     price = models.IntegerField(verbose_name="価格")
-    # 商品の出品日時
+    # 商品の作成日時を自動記録
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="出品日時")
-    # 商品情報の更新日時
+    # 商品の更新日時を自動記録
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
     class Meta:
         verbose_name_plural = "商品"
-        ordering = ['-created_at']  # 最新の商品を上に表示
+        ordering = ['-created_at']  # デフォルトで作成日時の降順に並べる
 
     def __str__(self):
-        # 管理画面などで商品名を表示するための文字列
+        # 商品名と出品者の名前を文字列で返す
         return f"{self.name} - {self.seller.name}"
 
 
