@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>カートの確認</h2>
+    <ul>
+        {% for item in cart_items %}
+        <li>
+            <img src="{{ item.product.images.first.url }}" alt="画像" style="width: 100px;">
+            {{ item.product.name }} - {{ item.product.price }}円
+        </li>
+        {% endfor %}
+    </ul>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">確認して購入</button>
+    </form>
+{% endblock %}

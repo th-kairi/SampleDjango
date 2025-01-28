@@ -295,6 +295,14 @@ class Wallet(models.Model):
             return True
         return False
 
+class Cart(models.Model):
+    """
+    カートモデル。
+    """
+    user = models.ForeignKey(Member, on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 # 購入履歴を管理する注文モデル
 class Order(models.Model):

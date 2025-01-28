@@ -143,6 +143,7 @@
                 body: formData, // フォームデータを送信
             }).then(response => {
                 if (response.ok) {
+                    alert('商品が出品されました！'); // 成功時のメッセージ
                     window.location.href = "{% url 'member:product_list' %}"; // リダイレクト
                 } else {
                     alert('エラーが発生しました。'); // エラー時のメッセージ

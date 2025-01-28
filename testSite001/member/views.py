@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 # クラスベースビューを作成するための基底クラス
 from django.views.generic import TemplateView, ListView
+from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View 
 from django.http import JsonResponse
@@ -95,13 +96,12 @@ class ProductListView(ListView):
             return Product.objects.filter(name__icontains=query)  # 部分一致検索
         return Product.objects.all()  # 全件表示
     
-# 商品登録用のビュー関数
+# 商品登録用のビュー
 class ProductCreateView(LoginRequiredMixin, View):
     """
     商品登録を行うビュー。
     ユーザーがログインしている場合のみアクセス可能。
     """
-
     def get(self, request):
         """
         GETリクエストを処理するメソッド。
@@ -134,3 +134,97 @@ class ProductCreateView(LoginRequiredMixin, View):
             images = request.FILES.getlist('images')  # リクエストから画像ファイルを取得
             for image in images:  # 各画像について処理を実行
                 ProductImage.objects.create(product=product, image=image)  # 画像を保存
+
+# 商品詳細ビュー
+class ProductDetailView(View):
+    """
+    商品詳細ページビュー。
+    ログインユーザーが出品者なら編集画面へ、そうでなければ購入画面へ遷移。
+    """
+    def get(self, request, product_id):
+        product = Product.objects.get(id=product_id)  # 商品を取得
+
+        # ログインユーザーが出品者の場合
+        if request.user.is_authenticated and product.seller == request.user:
+            return redirect(reverse('member:product_edit', args=[product.id]))
+
+        # ログインユーザーが出品者でない場合（購入画面へ）
+        return redirect(reverse('member:product_purchase', args=[product.id]))
+    
+# 商品編集ビュー
+class ProductEditView(LoginRequiredMixin, UpdateView):
+    """
+    商品編集ページビュー。
+    ログインユーザーが出品者の場合のみアクセス可能。
+    """
+    model = Product
+    form_class = ProductForm
+    template_name = 'products/product_edit.html'  # 作成画面と同じテンプレートを使用
+
+    def get_queryset(self):
+        """
+        ログインユーザーが出品者である商品を取得。
+        """
+        return Product.objects.filter(seller=self.request.user.member)
+
+    def get_object(self, queryset=None):
+        """
+        編集対象の商品を取得。
+        """
+        product = Product.objects.get(id=self.kwargs['pk'])
+        return product
+
+    def get_success_url(self):
+        """
+        編集成功後のリダイレクト先。
+        """
+        return reverse('member:product_detail', args=[self.object.id])
+
+# 商品購入ビュー
+class ProductPurchaseView(LoginRequiredMixin, View):
+    """
+    購入画面のビュー。
+    """
+    def get(self, request, product_id):
+        # 選択された商品を取得
+        product = Product.objects.get(id=product_id)
+
+        # 同じ出品者の他の商品を取得
+        other_products = Product.objects.filter(seller=product.seller).exclude(id=product_id)
+
+        return render(request, 'products/product_purchase.html', {
+            'product': product,
+            'other_products': other_products,
+        })
+
+    def post(self, request, product_id):
+        product = Product.objects.filter(id=product_id)
+        quantity = int(request.POST.get('quantity', 1))
+
+        # カートに商品を追加
+        Cart.objects.create(user=request.user, product=product, quantity=quantity)
+
+        return redirect(reverse('products:cart_confirmation'))
+    
+class CartConfirmationView(LoginRequiredMixin, View):
+    """
+    カート確認画面ビュー。
+    """
+    def get(self, request):
+        cart_items = Cart.objects.filter(user=request.user)
+        return render(request, 'products/cart_confirmation.html', {
+            'cart_items': cart_items,
+        })
+
+    def post(self, request):
+        # カート内の商品を確定して注文番号を生成
+        cart_items = Cart.objects.filter(user=request.user)
+        order_number = f"ORD-{int(time.time())}"
+
+        for item in cart_items:
+            # 必要に応じてOrderモデルで保存
+            item.delete()  # カートから削除
+
+        return render(request, 'products/order_success.html', {
+            'order_number': order_number,
+        })

@@ -1,23 +1,21 @@
 {% extends 'base.html' %}
+
 {% load static %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <!-- 検索フォーム -->
-        <form method="get" class="form-inline">
-            <div class="input-group">
-                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="商品を検索">
-                <button type="submit" class="btn btn-primary">検索</button>
-            </div>
-        </form>
-        <!-- 出品ボタン -->
-        <a href="{% url 'member:product_create' %}" class="btn btn-success">出品</a>
-    </div>
-    <hr>
-    <!-- 商品一覧 -->
-    <div class="row">
-        {% for product in products %}
+    <h2>{{ product.name }} の購入</h2>
+    <img src="{{ product.images.first.image.url  }}" alt="画像" style="width: 150px;">
+    <p>価格: {{ product.price }}円</p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="quantity">数量:</label>
+        <input type="number" name="quantity" id="quantity" value="1" min="1">
+        <button type="submit">購入する</button>
+    </form>
+
+    <h3>同じ出品者の商品</h3>
+    <ul>
+        {% for product in other_products %}
         <!-- 
             col-6：モバイル画面では2列。
             col-sm-4：小さめのデスクトップで3列。
@@ -49,6 +47,5 @@
             </div>
         </div>
         {% endfor %}
-    </div>
-</div>
+</ul>
 {% endblock %}
