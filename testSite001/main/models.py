@@ -237,7 +237,7 @@ class Product(models.Model):
     # 商品の詳細な説明を格納するフィールド
     description = models.TextField(verbose_name="商品説明")
     # 商品の価格（小数点第2位まで対応）
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="価格")
+    price = models.IntegerField(verbose_name="価格")
     # 商品の出品日時
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="出品日時")
     # 商品情報の更新日時

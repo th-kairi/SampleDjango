@@ -102,33 +102,30 @@ class ProductRegisterView(View):
         return render(request, 'products/register_product.html', {
             'product_form': product_form,
         })
-
+    
+    # 商品登録処理
     def post(self, request):
         product_form = self.ProductForm(request.POST)
 
         if product_form.is_valid():
             # 商品データを保存
             product = product_form.save(commit=False)
+
+            # ログインユーザーが Member モデルか確認して取得
             try:
-                # ログインユーザーが Member モデルであることを確認
                 member_instance = Member.objects.get(pk=request.user.pk)
             except Member.DoesNotExist:
-                return redirect('member:index')  # エラー処理
+                return redirect('member:index')
 
             product.seller = member_instance
             product.save()
 
             # 画像データを保存
-            for image in request.FILES.getlist('images'):
+            for image in request.FILES.getlist('images'):  # HTML側で name="images" を設定
+                print("image:",image)
                 ProductImage.objects.create(product=product, image=image)
 
             return redirect('member:product_list')
-        else:
-            print("フォームエラー:", product_form.errors)
-
-        return render(request, 'products/register_product.html', {
-            'product_form': product_form,
-        })
-    
+        
 
 
