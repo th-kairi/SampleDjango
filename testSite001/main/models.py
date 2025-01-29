@@ -243,6 +243,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="出品日時")
     # 商品の更新日時を自動記録
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+    is_sold_out = models.BooleanField(default=False, verbose_name="売り切れフラグ")  # 売り切れ状態を示すブール値
 
     class Meta:
         verbose_name_plural = "商品"
@@ -295,14 +296,19 @@ class Wallet(models.Model):
             return True
         return False
 
+# 商品購入時に一時的に作成するモデル
 class Cart(models.Model):
-    """
-    カートモデル。
-    """
-    user = models.ForeignKey(Member, on_delete=models.CASCADE)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, verbose_name="会員")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="商品")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="数量")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
+
+    class Meta:
+        verbose_name_plural = "カート"
+    
+    def __str__(self):
+        return f"{self.member.name}'s Cart - {self.product.name} ({self.quantity})"
+    
 
 # 購入履歴を管理する注文モデル
 class Order(models.Model):

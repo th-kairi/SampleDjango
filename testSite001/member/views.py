@@ -5,20 +5,23 @@ from django.urls import reverse
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import View 
-from django.http import JsonResponse
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-# 入力処理を作成する際に使うフォーム
 from django.forms import *
-# モデルインポート
 from main.models import *
 from .forms import *
+import uuid
 
+# ---------------------------------------------------------------------
+# トップページビュー
+# ---------------------------------------------------------------------
 class IndexView(TemplateView):
     template_name = 'member/index.html'  # 使用するテンプレートファイル
 
+# ---------------------------------------------------------------------
 # ポイント追加ビュー
+# ---------------------------------------------------------------------
 class AddPointsView(View):
     def get(self, request):
         # ポイント候補値 画面上に表示される追加候補ボタンの値
@@ -31,7 +34,7 @@ class AddPointsView(View):
             return redirect('member:index')  # リダイレクト先を適切に設定
 
         # Walletの存在チェックをして取得または作成
-        wallet, created = Wallet.objects.get_or_create(member=request.user.member)
+        wallet = Wallet.objects.get_or_create(member=request.user.member)
 
         # ユーザーのWallet情報をテンプレートに渡す
         return render(request, 'member/add_points.html', {'wallet': wallet, 'point_values': point_values})
@@ -55,7 +58,9 @@ class AddPointsView(View):
         request.session['points_to_add'] = points_to_add
         return redirect('member:confirm_add_points')
 
+# ---------------------------------------------------------------------
 # 追加ポイント確認ビュー
+# ---------------------------------------------------------------------
 class ConfirmAddPointsView(View):
     def get(self, request):
         # セッションから追加ポイントを取得
@@ -80,7 +85,9 @@ class ConfirmAddPointsView(View):
         messages.success(request, f"{points_to_add}ポイントを追加しました。")
         return redirect('member:add_points')
     
+# ---------------------------------------------------------------------
 # 商品検索ビュー
+# ---------------------------------------------------------------------
 class ProductListView(ListView):
     model = Product  # 表示対象のモデル
     template_name = 'products/product_list.html'  # 使用するテンプレート
@@ -96,12 +103,11 @@ class ProductListView(ListView):
             return Product.objects.filter(name__icontains=query)  # 部分一致検索
         return Product.objects.all()  # 全件表示
     
+# ---------------------------------------------------------------------
 # 商品登録用のビュー
+# ユーザーがログインしている場合のみアクセス可能。
+# ---------------------------------------------------------------------
 class ProductCreateView(LoginRequiredMixin, View):
-    """
-    商品登録を行うビュー。
-    ユーザーがログインしている場合のみアクセス可能。
-    """
     def get(self, request):
         """
         GETリクエストを処理するメソッド。
@@ -135,12 +141,11 @@ class ProductCreateView(LoginRequiredMixin, View):
             for image in images:  # 各画像について処理を実行
                 ProductImage.objects.create(product=product, image=image)  # 画像を保存
 
+# ---------------------------------------------------------------------
 # 商品詳細ビュー
+# ログインユーザーが出品者なら編集画面へ、そうでなければ購入画面へ遷移。
+# ---------------------------------------------------------------------
 class ProductDetailView(View):
-    """
-    商品詳細ページビュー。
-    ログインユーザーが出品者なら編集画面へ、そうでなければ購入画面へ遷移。
-    """
     def get(self, request, product_id):
         product = Product.objects.get(id=product_id)  # 商品を取得
 
@@ -150,13 +155,12 @@ class ProductDetailView(View):
 
         # ログインユーザーが出品者でない場合（購入画面へ）
         return redirect(reverse('member:product_purchase', args=[product.id]))
-    
+
+# ---------------------------------------------------------------------
 # 商品編集ビュー
+# ログインユーザーが出品者の場合のみアクセス可能。
+# ---------------------------------------------------------------------
 class ProductEditView(LoginRequiredMixin, UpdateView):
-    """
-    商品編集ページビュー。
-    ログインユーザーが出品者の場合のみアクセス可能。
-    """
     model = Product
     form_class = ProductForm
     template_name = 'products/product_edit.html'  # 作成画面と同じテンプレートを使用
@@ -180,11 +184,10 @@ class ProductEditView(LoginRequiredMixin, UpdateView):
         """
         return reverse('member:product_detail', args=[self.object.id])
 
+# ---------------------------------------------------------------------
 # 商品購入ビュー
+# ---------------------------------------------------------------------
 class ProductPurchaseView(LoginRequiredMixin, View):
-    """
-    購入画面のビュー。
-    """
     def get(self, request, product_id):
         # 選択された商品を取得
         product = Product.objects.get(id=product_id)
@@ -198,20 +201,21 @@ class ProductPurchaseView(LoginRequiredMixin, View):
         })
 
     def post(self, request, product_id):
-        product = Product.objects.filter(id=product_id)
+        product = Product.objects.get(id=product_id)
         quantity = int(request.POST.get('quantity', 1))
+        member = Member.objects.get(member_num=request.user.member_num)
 
         # カートに商品を追加
-        Cart.objects.create(user=request.user, product=product, quantity=quantity)
+        Cart.objects.create(member=member, product=product, quantity=quantity)
 
-        return redirect(reverse('products:cart_confirmation'))
+        return redirect(reverse('member:cart_confirmation'))
     
+# ---------------------------------------------------------------------
+# カート確認画面ビュー
+# ---------------------------------------------------------------------
 class CartConfirmationView(LoginRequiredMixin, View):
-    """
-    カート確認画面ビュー。
-    """
     def get(self, request):
-        cart_items = Cart.objects.filter(user=request.user)
+        cart_items = Cart.objects.filter(member=request.user)
         return render(request, 'products/cart_confirmation.html', {
             'cart_items': cart_items,
         })
@@ -219,7 +223,7 @@ class CartConfirmationView(LoginRequiredMixin, View):
     def post(self, request):
         # カート内の商品を確定して注文番号を生成
         cart_items = Cart.objects.filter(user=request.user)
-        order_number = f"ORD-{int(time.time())}"
+        order_number = f"ORD-{uuid.uuid4().hex[:8]}"
 
         for item in cart_items:
             # 必要に応じてOrderモデルで保存
