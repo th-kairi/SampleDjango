@@ -148,9 +148,12 @@ class OrderAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'  # 日付階層ナビゲーション
 admin.site.register(Order, OrderAdmin)
 
-# 注文商品モデルの管理画面カスタマイズ
-@admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'product', 'quantity')  # 一覧画面で表示する項目
     search_fields = ('order__buyer__name', 'product__name')  # 検索対象項目
     list_filter = ('product',)  # フィルタリングオプション
+admin.site.register(OrderItem, OrderItemAdmin)
+
+
+admin.site.register(Cart)
+

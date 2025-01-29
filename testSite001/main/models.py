@@ -300,7 +300,6 @@ class Wallet(models.Model):
 class Cart(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE, verbose_name="会員")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="商品")
-    quantity = models.PositiveIntegerField(default=1, verbose_name="数量")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
 
     class Meta:

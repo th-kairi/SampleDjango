@@ -5,7 +5,7 @@
     <ul>
         {% for item in cart_items %}
         <li>
-            <img src="{{ item.product.images.first.url }}" alt="画像" style="width: 100px;">
+            <img src="{{ product.images.first.image.url }}" alt="画像" style="width: 100px;">
             {{ item.product.name }} - {{ item.product.price }}円
         </li>
         {% endfor %}
