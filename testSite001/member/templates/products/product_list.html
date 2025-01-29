@@ -5,7 +5,7 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <!-- 検索フォーム -->
-        <form method="get" class="form-inline">
+        <form action="{% url 'member:product_list' %}" method="get" class="form-inline">
             <div class="input-group">
                 <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="商品を検索">
                 <button type="submit" class="btn btn-primary">検索</button>
@@ -14,7 +14,7 @@
         <!-- 出品ボタン -->
         <a href="{% url 'member:product_create' %}" class="btn btn-success">出品</a>
     </div>
-    <hr>
+    <hr class="my-4" style="border: 1px solid #ccc; opacity: 0.8;">
     <!-- 商品一覧 -->
     <div class="row">
         {% for product in products %}
@@ -37,8 +37,8 @@
                     </div>
 
                     <!-- 金額を画像上に重ねる -->
-                    <div class="bg-dark text-white position-absolute top-0 start-0 px-3 py-1 rounded-end">
-                        {{ product.price }}円
+                    <div class="bg-dark bg-opacity-50 text-white position-absolute top-0 start-0 px-3 py-1 rounded-end">
+                        ￥{{ product.price }}
                     </div>
 
                     <!-- 商品タイトル -->
