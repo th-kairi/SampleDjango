@@ -1,13 +1,12 @@
 # テンプレート描画とリダイレクトに使用
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 # クラスベースビューを作成するための基底クラス
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, ListView, FormView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.views import View
 from django.forms import *
 from main.models import *
 from .forms import *
@@ -232,3 +231,122 @@ class CartConfirmationView(LoginRequiredMixin, View):
         return render(request, 'products/order_success.html', {
             'order_number': order_number,
         })
+    
+
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+
+class UserScheduleListView(ListView):
+    """ユーザーのスケジュール一覧を曜日ごとに表示"""
+    model = UserSchedule
+    template_name = 'schedule/user_schedule_list.html'
+    context_object_name = 'user_schedules'
+
+    def get_queryset(self):
+        """ログインユーザーのスケジュールを取得"""
+        return UserSchedule.objects.filter(Member=self.request.user) 
+
+    def get_context_data(self, **kwargs):
+        """曜日ごとにスケジュールを分類してコンテキストに追加"""
+        context = super().get_context_data(**kwargs)
+
+        # 曜日ごとにスケジュールを分類する辞書（キー: 英数字曜日, 値: スケジュールリスト）
+        schedules_by_day = {
+            "mon": [], "tue": [], "wed": [], "thu": [], "fri": [], "sat": [], "sun": [],
+        }
+
+        # ユーザーのスケジュールを曜日ごとに分類
+        for user_schedule in context['user_schedules']:
+            day_of_week = user_schedule.get_day_of_week_display()  # 数字から英数字に変換
+            day_of_week = self.convert_day_to_english(day_of_week)  # 英語表記に変換
+            if day_of_week in schedules_by_day:
+                schedules_by_day[day_of_week].append(user_schedule)
+
+        # コンテキストに追加
+        context['schedules_by_day'] = schedules_by_day
+        return context
+
+    def convert_day_to_english(self, day_of_week):
+        """日本語の曜日を英語の曜日に変換"""
+        day_map = {
+            '月': 'mon',
+            '火': 'tue',
+            '水': 'wed',
+            '木': 'thu',
+            '金': 'fri',
+            '土': 'sat',
+            '日': 'sun',
+        }
+        return day_map.get(day_of_week, '')
+
+# 予定選択
+class ScheduleSelectView(ListView):
+    """予定の選択画面（検索機能付き）"""
+    model = Schedule
+    template_name = 'schedule/user_schedule_select.html'
+    context_object_name = 'schedules'
+
+    def get_queryset(self):
+        """検索フォームの値を取得し、フィルタリングして予定を取得"""
+        queryset = Schedule.objects.all()
+
+        # 検索キーワード
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(title__icontains=q)
+
+        # カテゴリー
+        category_id = self.request.GET.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        # 重要度
+        importance_id = self.request.GET.get('importance')
+        if importance_id:
+            queryset = queryset.filter(importance_id=importance_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """カテゴリー・重要度リストをテンプレートに渡す"""
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        context['importances'] = Importance.objects.all()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """選択した予定を登録する処理"""
+        selected_schedule_ids = request.POST.getlist('selected_schedules')  # チェックした予定のIDリスト
+        day_of_week_str = kwargs.get('day')  # URLパラメータから曜日を取得
+
+        # 曜日を数字に変換（英語の曜日を数字に変換）
+        days_map = {
+            'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6, 'sun': 7
+        }
+        day_of_week = days_map.get(day_of_week_str)
+
+        if not day_of_week:
+            # 不正な曜日の場合、エラーページにリダイレクト
+            return redirect('error_page')  # 適切なエラーページを作成してリダイレクトします
+
+        # ログインユーザーに紐づく Member を取得
+        member = Member.objects.get(member_num=request.user.member_num)
+
+        if selected_schedule_ids:
+            for schedule_id in selected_schedule_ids:
+                try:
+                    schedule = Schedule.objects.get(id=schedule_id)
+                except Schedule.DoesNotExist:
+                    # 該当する予定が存在しない場合
+                    continue
+
+                # UserSchedule に登録（ユーザーごとのスケジュール）
+                UserSchedule.objects.create(
+                    Member=member,  # Member インスタンス
+                    schedule=schedule,  # 選択した予定
+                    day_of_week=day_of_week  # 数字で曜日を登録
+                )
+
+        # 登録後、スケジュール一覧ページへリダイレクト
+        return redirect('member:user_schedule_list')

@@ -1,10 +1,10 @@
 # staff/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import *
 from django.views.generic.edit import CreateView
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import *
 from .forms import *
 
@@ -30,6 +30,10 @@ class StaffCreateView(CreateView):
     form_class = StaffForm
     success_url = reverse_lazy('staff:staff_list')
 
+
+# ====================================================================================================
+# ===== シフトアプリ
+# ====================================================================================================
 # シフト確認ページ（スタッフのシフト一覧）
 class ShiftScheduleListView(ListView):
     model = ShiftSchedule
@@ -133,3 +137,74 @@ class ShiftScheduleView(View):
         print("context:",context)
 
         return render(request, 'staff/shift_schedule.html', context)
+
+
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+
+# 予定の一覧を表示するクラスベースビュー（複数条件検索機能付き）
+class ScheduleListView(ListView):
+    model = Schedule  # 対象のモデルを指定
+    template_name = 'schedule/schedule_list.html'  # 使用するテンプレートを指定
+    context_object_name = 'schedules'  # テンプレート内で使用する変数名を指定
+
+    def get_queryset(self):
+        """
+        検索条件を適用したクエリセットを取得する
+        """
+        query = self.request.GET.get('q')
+        category = self.request.GET.get('category')
+        importance = self.request.GET.get('importance')
+        is_completed = self.request.GET.get('is_completed')
+        
+        queryset = Schedule.objects.all()
+        
+        # ユーザーが検索したクエリがあれば、タイトルまたは説明にそのクエリを含む項目で絞り込み
+        if query:
+            queryset = queryset.filter(Q(title__icontains=query) | Q(description__icontains=query))
+
+        # カテゴリが指定されていれば、そのカテゴリに一致する項目で絞り込み
+        if category:
+            queryset = queryset.filter(category=category)
+
+        # 重要度が指定されていれば、その重要度に一致する項目で絞り込み
+        if importance:
+            queryset = queryset.filter(importance=importance)
+
+        # 完了状態が指定されていれば、その状態に一致する項目で絞り込み
+        # 'true' または 'false' の文字列で判定
+        if is_completed in ['true', 'false']:
+            queryset = queryset.filter(is_completed=(is_completed == 'true'))
+            return queryset
+
+# 予定を新規作成するクラスベースビュー
+class ScheduleCreateView(CreateView):
+    model = Schedule  # 対象のモデルを指定
+    template_name = 'schedule/schedule_create.html'  # 使用するテンプレートを指定
+    form_class = ScheduleForm
+    success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定
+
+    def form_valid(self, form):
+        # フォームが有効な場合、画像などを含むデータを保存
+        schedule = form.save(commit=False)
+        schedule.save()  # 画像も含めて保存
+        return redirect(self.success_url)
+
+# 予定を編集するクラスベースビュー
+class ScheduleUpdateView(UpdateView):
+    model = Schedule  # 対象のモデルを指定
+    fields = ['title', 'description', 'category', 'importance', 'is_completed']  # 入力フィールドを指定
+    template_name = 'schedule/schedule_create.html'  # 使用するテンプレートを指定
+    success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定
+    
+    def form_valid(self, form):
+        schedule = form.save(commit=False)
+        schedule.save()  # 更新された内容を保存
+        return redirect(self.success_url)
+
+# 予定を削除するクラスベースビュー
+class ScheduleDeleteView(DeleteView):
+    model = Schedule  # 対象のモデルを指定
+    template_name = 'schedule/schedule_delete.html'  # 削除確認用のテンプレートを指定
+    success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定

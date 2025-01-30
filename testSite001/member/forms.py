@@ -1,5 +1,5 @@
 from django import forms
-from main.models import Product
+from main.models import *
 
 
 class ProductForm(forms.ModelForm):
@@ -52,3 +52,15 @@ class ProductForm(forms.ModelForm):
         if len(name) < 3:  # 商品名が3文字未満の場合、エラーを発生
             raise forms.ValidationError('商品名は3文字以上で入力してください。')  # エラーメッセージを表示
         return name  # 問題がなければ商品名を返す
+
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+
+class ScheduleSelectionForm(forms.Form):
+    """予定の選択フォーム"""
+    selected_schedules = forms.ModelMultipleChoiceField(
+        queryset=Schedule.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )

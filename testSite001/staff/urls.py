@@ -1,4 +1,6 @@
 # staff/urls.py
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
@@ -24,6 +26,22 @@ urlpatterns = [
     # シフト確認画面
     path('staff_shift_schedule/', views.StaffListView.as_view(), name='staff_shift_schedule'),
 
-    
 
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================    
+
+    # 予定一覧を表示するページのURL
+    path('schedule-search/', views.ScheduleListView.as_view(), name='schedule_list'),
+    # 予定を新規作成するページのURL
+    path('new/', views.ScheduleCreateView.as_view(), name='schedule_create'),
+    # 予定を編集するページのURL（pkは予定のID）
+    path('<int:pk>/edit/', views.ScheduleUpdateView.as_view(), name='schedule_edit'),
+    # 予定を削除するページのURL（確認画面を表示）
+    path('<int:pk>/delete/', views.ScheduleDeleteView.as_view(), name='schedule_delete'),
 ]
+
+
+# メディアファイルのURLを設定
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

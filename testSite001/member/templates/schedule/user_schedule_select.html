@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 class="text-center">予定の追加（{{ view.kwargs.day }}曜日）</h2>
+
+<!-- 検索フォーム -->
+<form method="GET" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="キーワード" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-control">
+                <option value="">カテゴリ選択</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="importance" class="form-control">
+                <option value="">重要度選択</option>
+                {% for importance in importances %}
+                    <option value="{{ importance.id }}" {% if request.GET.importance == importance.id|stringformat:"s" %}selected{% endif %}>
+                        {{ importance.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">検索</button>
+        </div>
+    </div>
+</form>
+
+<!-- 予定一覧（検索結果） -->
+<form method="POST">
+    {% csrf_token %}
+    <div class="container">
+        <div class="row row-cols-6 g-3">  <!-- 横6列に配置 -->
+            {% for schedule in schedules %}
+            <div class="col">
+                <label class="card">
+                    <input type="checkbox" name="selected_schedules" value="{{ schedule.id }}" class="schedule-checkbox" style="display: none;">
+                    <div class="position-relative">
+                        <!-- 画像を3:4のアスペクト比で表示 -->
+                        <div class="image-container">
+                            <img src="{{ schedule.image.url }}" class="img-fluid" alt="{{ schedule.title }}">
+                        </div>
+                        <!-- 画像上にタイトルと重要度を表示 -->
+                        <div class="card-img-overlay text-white bg-dark bg-opacity-50 p-2 text-center">
+                            <h6 class="mb-1">{{ schedule.title }}</h6>
+                            <span class="badge bg-warning">{{ schedule.importance }}</span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+            {% empty %}
+            <p class="text-muted">該当する予定がありません。</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-success mt-3">追加</button>
+</form>
+
+<a href="{% url 'member:user_schedule_list' %}" class="btn btn-secondary mt-3">戻る</a>
+
+<!-- 画像サイズのスタイル設定 -->
+<style>
+    /* 画像を3:4のアスペクト比に固定 */
+    .image-container {
+        width: 100%;
+        padding-top: 133.33%; /* 3:4 (高さ ÷ 幅 = 4 ÷ 3 = 1.3333) */
+        position: relative;
+    }
+
+    .image-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* 画像をアスペクト比を維持したまま表示 */
+        border-radius: 5px;
+    }
+
+    /* カードのスタイル調整 */
+    .card {
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    /* チェックされたときの枠線 */
+    .schedule-checkbox:checked + div {
+        border: 3px solid #007bff;
+        border-radius: 5px;
+    }
+</style>
+
+{% endblock %}

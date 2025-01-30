@@ -18,6 +18,13 @@ urlpatterns = [
     path('cart/confirmation/', CartConfirmationView.as_view(), name='cart_confirmation'), # カート画面
 
 
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+    
+    path('user-schedule-list/', UserScheduleListView.as_view(), name='user_schedule_list'),
+    path('add/<str:day>/', ScheduleSelectView.as_view(), name='user_schedule_add'),
+
 
 
 ]

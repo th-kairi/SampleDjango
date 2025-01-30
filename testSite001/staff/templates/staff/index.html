@@ -10,5 +10,11 @@
         {% else %}
             <p>スタッフIDが無効です。</p>
         {% endif %}
+        
+        <!-- 勲章授与画面に遷移するアイコンボタン -->
+        <a href="{% url 'staff:schedule_list' %}" class="btn btn-primary">
+            <i class="fas fa-medal" style="font-size: 24px; margin-right: 10px;"></i>
+            予定マスタ
+        </a>    
     </div>
 {% endblock %}

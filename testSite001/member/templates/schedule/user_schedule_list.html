@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 class="text-center">会員の曜日ごとのスケジュール</h2>
+
+<!-- 曜日スケジュールをテーブルレイアウトで表示 -->
+<div class="container">
+    <table class="table table-bordered text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>月曜日</th>
+                <th>火曜日</th>
+                <th>水曜日</th>
+                <th>木曜日</th>
+                <th>金曜日</th>
+                <th class="table-primary">土曜日</th>
+                <th class="table-primary">日曜日</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for day, schedules in schedules_by_day.items %}
+                <td>
+                    <!-- 予定リスト -->
+                    <ul class="list-unstyled">
+                        {% for schedule in schedules %}
+                        <li class="mb-2">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ schedule.schedule.image.url }}" alt="{{ schedule.schedule.title }}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                                <div>
+                                    <strong>{{ schedule.schedule.title }}</strong>
+                                    <br>
+                                    <span class="badge bg-info">{{ schedule.schedule.importance }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">予定なし</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- 予定追加ボタン -->
+                    <a href="{% url 'member:user_schedule_add' day=day %}" class="btn btn-sm btn-primary">＋ 追加</a>
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

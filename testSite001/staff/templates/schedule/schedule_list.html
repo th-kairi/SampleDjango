@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>予定一覧</h2>
+
+<!-- 検索フォーム -->
+<form method="GET" action="">
+    <input type="text" name="q" placeholder="キーワード検索" value="{{ request.GET.q }}">
+    
+    <select name="category">
+        <option value="">カテゴリー選択</option>
+        <option value="work" {% if request.GET.category == "work" %}selected{% endif %}>仕事</option>
+        <option value="personal" {% if request.GET.category == "personal" %}selected{% endif %}>個人</option>
+    </select>
+    
+    <select name="importance">
+        <option value="">重要度選択</option>
+        <option value="high" {% if request.GET.importance == "high" %}selected{% endif %}>高</option>
+        <option value="medium" {% if request.GET.importance == "medium" %}selected{% endif %}>中</option>
+        <option value="low" {% if request.GET.importance == "low" %}selected{% endif %}>低</option>
+    </select>
+    
+    <select name="is_completed">
+        <option value="">完了状態</option>
+        <option value="true" {% if request.GET.is_completed == "true" %}selected{% endif %}>完了</option>
+        <option value="false" {% if request.GET.is_completed == "false" %}selected{% endif %}>未完了</option>
+    </select>
+    
+    <button type="submit">検索</button>
+</form>
+
+<a href="{% url 'staff:schedule_create' %}" class="btn btn-primary">新しい予定を追加</a>
+<ul>
+    {% for schedule in schedules %}
+    <li>
+        {{ schedule.title }}
+        <a href="{% url 'staff:schedule_edit' schedule.pk %}">編集</a>
+        <a href="{% url 'staff:schedule_delete' schedule.pk %}">削除</a>
+    </li>
+    {% empty %}
+    <li>予定はありません。</li>
+    {% endfor %}
+</ul>
+{% endblock %}

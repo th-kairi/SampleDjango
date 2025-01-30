@@ -152,6 +152,11 @@ class MemberMedal(models.Model):
         verbose_name_plural = "会員勲章"
         unique_together = ('member', 'medal')  # 同じ会員が同じ勲章を2度取得できないように設定
 
+
+# ====================================================================================================
+# ===== シフトアプリ
+# ====================================================================================================
+
 # ランクモデル
 class Rank(models.Model):
     name = models.CharField(verbose_name="ランク名", max_length=50)  # ランク名
@@ -228,6 +233,11 @@ class ShiftSchedule(models.Model):
     class Meta:
         verbose_name_plural = "シフトスケジュール"
         unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ
+
+
+# ====================================================================================================
+# ===== フリマアプリ
+# ====================================================================================================
 
 # 商品モデル（商品画像は別モデルで管理）
 class Product(models.Model):
@@ -339,3 +349,77 @@ class OrderItem(models.Model):
     def __str__(self):
         # 管理画面などで注文IDと商品名を表示
         return f"Order #{self.order.id} - {self.product.name}"
+
+
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+
+# カテゴリモデル
+class Category(models.Model):
+    name = models.CharField(max_length=50, unique=True, help_text="カテゴリ名")
+
+    # モデルの参照設定
+    class Meta:
+        verbose_name_plural = "カテゴリー"
+    def __str__(self):
+        return self.name
+
+# 重要度モデル
+class Importance(models.Model):
+    level = models.CharField(max_length=20, unique=True, help_text="重要度レベル")
+
+    # モデルの参照設定
+    class Meta:
+        verbose_name_plural = "重要度"
+    def __str__(self):
+        return self.level
+
+# スケジュールモデル
+class Schedule(models.Model):
+    # 予定のタイトルを保存するフィールド
+    title = models.CharField(max_length=255, help_text="予定のタイトルを入力")
+    # アップロードされた画像のパス（商品ごとにフォルダを分ける）
+    image = models.ImageField(upload_to="Schedule/images/", verbose_name="イメージ画像", blank=True, null=True)
+    # 予定の詳細情報を保存するフィールド（任意）
+    description = models.TextField(blank=True, null=True, help_text="予定の詳細を入力（任意）")
+    # 外部キーとしてカテゴリを関連付け
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='schedules', help_text="カテゴリを選択")
+    # 外部キーとして重要度を関連付け
+    importance = models.ForeignKey(Importance, on_delete=models.CASCADE, related_name='schedules', help_text="重要度を選択")
+    # 予定の完了フラグ（Trueなら完了した予定、Falseなら未完了）
+    is_completed = models.BooleanField(default=False, help_text="予定が完了したかどうか（デフォルトは未完了）")
+    # 予定の作成日時を保存するフィールド（自動的に設定）
+    created_at = models.DateTimeField(auto_now_add=True, help_text="予定が作成された日時（自動設定）")
+    # 予定の更新日時を保存するフィールド（自動的に設定）
+    updated_at = models.DateTimeField(auto_now=True, help_text="予定が更新された日時（自動設定）")
+    
+    # モデルの参照設定
+    class Meta:
+        verbose_name_plural = "スケジュール"
+
+    def __str__(self):
+        # 管理画面などでオブジェクトを識別するための文字列を返す
+        return self.title
+    
+
+# ユーザーと曜日ごとの予定を紐づけるテーブル
+class UserSchedule(models.Model):
+    Member = models.ForeignKey(Member, on_delete=models.CASCADE)  # 会員情報（ユーザー）
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 予定（スケジュール）
+    day_of_week = models.PositiveIntegerField()  # 曜日を数値で表現（0=月曜日, 1=火曜日, ..., 6=日曜日）
+    is_completed = models.BooleanField(default=False)  # 実際にその予定が完了したかどうか
+
+
+    # モデルの参照設定
+    class Meta:
+        verbose_name_plural = "曜日毎のスケジュール"
+        unique_together = ('Member', 'schedule', 'day_of_week')  # 同一ユーザーの同じ曜日に同じ予定は1回だけ
+
+    def __str__(self):
+        return f"{self.Member.username} - {self.schedule.title} - {self.get_day_of_week_display()}"
+    
+    def get_day_of_week_display(self):
+        days_map = {1: '月', 2: '火', 3: '水', 4: '木', 5: '金', 6: '土', 7: '日'}
+        return days_map.get(self.day_of_week, '不明')
+    

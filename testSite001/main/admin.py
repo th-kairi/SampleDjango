@@ -117,6 +117,11 @@ class ShiftScheduleAdmin(admin.ModelAdmin):
     search_fields = ('staff__name', 'date')
     ordering = ('date',)
 
+
+# ====================================================================================================
+# ===== フリマアプリ
+# ====================================================================================================
+
 # 商品モデルの管理画面カスタマイズ
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'seller', 'price', 'created_at')  # 一覧画面で表示する項目
@@ -126,6 +131,7 @@ class ProductAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'  # 日付階層ナビゲーション
 admin.site.register(Product, ProductAdmin)
 
+# 商品画像の管理画面カスタマイズ
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'uploaded_at')  # 一覧画面で表示する項目
     list_filter = ('product',)  # フィルタリングオプション
@@ -148,12 +154,98 @@ class OrderAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'  # 日付階層ナビゲーション
 admin.site.register(Order, OrderAdmin)
 
+# 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'product', 'quantity')  # 一覧画面で表示する項目
     search_fields = ('order__buyer__name', 'product__name')  # 検索対象項目
     list_filter = ('product',)  # フィルタリングオプション
 admin.site.register(OrderItem, OrderItemAdmin)
 
-
+# まとめて注文をする際に利用する一時モデルの管理画面カスタマイズ
 admin.site.register(Cart)
 
+
+# ====================================================================================================
+# ===== スケジュールアプリ
+# ====================================================================================================
+
+# Categoryの管理画面カスタマイズ
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)  # 一覧に表示するフィールド
+    search_fields = ('name',)  # 検索フィールド（カテゴリ名で検索）
+    ordering = ('name',)  # 並び順をカテゴリ名でソート
+admin.site.register(Category, CategoryAdmin)
+
+# Importanceの管理画面カスタマイズ
+class ImportanceAdmin(admin.ModelAdmin):
+    list_display = ('level',)  # 一覧に表示するフィールド
+    search_fields = ('level',)  # 検索フィールド（重要度レベルで検索）
+    ordering = ('level',)  # 並び順を重要度レベルでソート
+admin.site.register(Importance, ImportanceAdmin)
+
+# スケジュールの管理画面カスタマイズ
+class ScheduleAdmin(admin.ModelAdmin):
+    # 管理画面で表示するフィールド
+    list_display = ('title', 'image', 'created_at', 'is_completed', 'updated_at')  # タイトル、作成日時、完了状態、更新日時を表示
+    
+    # 完了状態や作成日時で絞り込みができるようにする
+    list_filter = ('is_completed', 'created_at')
+    
+    # タイトルや詳細で検索できるようにする
+    search_fields = ('title', 'description')
+    
+    # 編集可能なフィールドを設定（完了状態は管理画面で直接変更可能）
+    list_editable = ('is_completed',)
+
+    # 作成日時と更新日時を管理画面で見やすく設定
+    ordering = ('-created_at',)  # 新しい順に並べる
+    
+
+    # 詳細画面でのフィールド順を指定
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'image', 'description', 'category', 'importance', 'is_completed')
+        }),
+        ('日時情報', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)  # 隠すクラス（必要に応じて表示）
+        }),
+    )
+
+    # 詳細画面で表示するフィールドの順番を指定
+    readonly_fields = ('created_at', 'updated_at')  # 作成日時と更新日時は読み取り専用
+
+    # フォームでの並び順を指定（必要に応じて）
+    save_on_top = True  # 「保存」ボタンを上部に配置
+admin.site.register(Schedule, ScheduleAdmin)
+
+# UserSchedule管理用クラス
+class UserScheduleAdmin(admin.ModelAdmin):
+    # 管理画面に表示するフィールドを指定
+    list_display = ('Member', 'schedule', 'day_of_week', 'is_completed')  # 必要なフィールドを追加
+    search_fields = ('Member__name', 'schedule__title')  # メンバー名や予定タイトルで検索可能にする
+    list_filter = ('day_of_week', 'is_completed')  # 曜日や完了状態でフィルタリングできるようにする
+
+    # 編集フォームでのフィールド配置
+    fieldsets = (
+        (None, {
+            'fields': ('Member', 'schedule', 'day_of_week', 'is_completed')
+        }),
+    )
+    def get_member_name(self, obj):
+        """UserSchedule インスタンスの member の name を表示"""
+        return obj.member.name  # 'member' フィールドに関連する 'name' を表示
+    
+    get_member_name.short_description = 'Member Name'  # ヘッダー名を変更
+
+    search_fields = ('member__name', 'schedule__title')  # メンバー名や予定タイトルで検索可能にする
+    list_filter = ('day_of_week', 'is_completed')  # 曜日や完了状態でフィルタリングできるようにする
+
+    fieldsets = (
+        (None, {
+            'fields': ('Member', 'schedule', 'day_of_week', 'is_completed')
+        }),
+    )
+
+# UserScheduleモデルを管理画面に登録
+admin.site.register(UserSchedule, UserScheduleAdmin)
