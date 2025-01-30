@@ -279,7 +279,7 @@ class UserScheduleListView(ListView):
             '日': 'sun',
         }
         return day_map.get(day_of_week, '')
-
+    
 # 予定選択
 class ScheduleSelectView(ListView):
     """予定の選択画面（検索機能付き）"""
@@ -290,6 +290,23 @@ class ScheduleSelectView(ListView):
     def get_queryset(self):
         """検索フォームの値を取得し、フィルタリングして予定を取得"""
         queryset = Schedule.objects.all()
+
+        # ログインユーザーに紐づくUserScheduleの取得
+        member = Member.objects.get(member_num=self.request.user.member_num)
+        day_of_week_str = self.kwargs.get('day')  # URLパラメータから曜日を取得
+        days_map = {
+            'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6, 'sun': 7
+        }
+        day_of_week = days_map.get(day_of_week_str)
+
+        # すでに選択済みの予定を取得
+        selected_schedules = UserSchedule.objects.filter(
+            Member=member,
+            day_of_week=day_of_week
+        ).values_list('schedule_id', flat=True)
+
+        # 既に選択されている予定を除外
+        queryset = queryset.exclude(id__in=selected_schedules)
 
         # 検索キーワード
         q = self.request.GET.get('q')
@@ -350,3 +367,4 @@ class ScheduleSelectView(ListView):
 
         # 登録後、スケジュール一覧ページへリダイレクト
         return redirect('member:user_schedule_list')
+

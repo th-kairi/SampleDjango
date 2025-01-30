@@ -27,6 +27,10 @@ class LoginView(LoginView):
         elif hasattr(user, 'member'):  # Memberに関連付けられているかを確認
             return reverse_lazy('member:index') # 会員用アプリのIndexにリダイレクト
         
+        # staffモデルの場合
+        elif hasattr(user, 'staff'):  # Memberに関連付けられているかを確認
+            return reverse_lazy('staff:index') # 会員用アプリのIndexにリダイレクト
+        
         # それ以外（デフォルト）は管理者ページなど
         return reverse_lazy('main:index')  # mainアプリのIndexにリダイレクト
 
