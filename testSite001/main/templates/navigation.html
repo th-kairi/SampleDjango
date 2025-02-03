@@ -11,6 +11,21 @@
             <li class="nav-item active">
                 <a class="btn btn-primary" href="/">ホーム</a>
             </li>
+            
+            <li class="nav-item active">
+                {% load user_filters %}
+                {% if request.user|is_admin %}
+                <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">admin app</p>
+                {% elif request.user|is_member %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">member app</p>
+                {% elif request.user|is_employee %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">employee app</p>
+                {% elif request.user|is_staff %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">Staff app</p>
+                {% else %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">ログインしてください。</p>
+                {% endif %}
+            </li>
         </ul>
     </div>
 

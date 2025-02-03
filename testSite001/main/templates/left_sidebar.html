@@ -5,18 +5,19 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="閉じる"></button>   
     </div>
     <div class="offcanvas-body">
-        <div>
-            プレースホルダとしてのテキスト。...
-        </div>
-        <div class="dropdown mt-3">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                ドロップダウン
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">メニュー1</a></li>
-                <li><a class="dropdown-item" href="#">メニュー2</a></li>
-                <li><a class="dropdown-item" href="#">メニュー3</a></li>
-            </ul>
-        </div>
+        <ui class="list-group">            
+            {% load user_filters %}
+            {% if request.user|is_admin %}
+                {% include 'leftMenu/admin_menu.html' %}
+            {% elif request.user|is_member %}
+                {% include 'leftMenu/member_menu.html' %}
+            {% elif request.user|is_employee %}
+                {% include 'leftMenu/employee_menu.html' %}
+            {% elif request.user|is_staff %}
+                {% include 'leftMenu/staff_menu.html' %}
+            {% else %}
+                <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">ログインしてください。</p>
+            {% endif %}
+        </ul>
     </div>
 </div>
