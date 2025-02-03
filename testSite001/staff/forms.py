@@ -20,7 +20,7 @@ class StaffForm(forms.ModelForm):
 
 class ScheduleForm(forms.ModelForm):
     class Meta:
-        model = Schedule  # モデルに対応するフォーム
+        model = Event  # モデルに対応するフォーム
         fields = ['title', 'image', 'description', 'category', 'importance', 'is_completed']  # 画像フィールドを追加
         labels = {
             'title': '予定タイトル',

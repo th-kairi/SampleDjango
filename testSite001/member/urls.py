@@ -23,7 +23,7 @@ urlpatterns = [
 # ====================================================================================================
     
     path('user-schedule-list/', UserScheduleListView.as_view(), name='user_schedule_list'),
-    path('add/<str:day>/', ScheduleSelectView.as_view(), name='user_schedule_add'),
+    path('add/<str:day>/', EventSelectView.as_view(), name='user_schedule_add'),
 
 
 

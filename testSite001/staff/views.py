@@ -145,7 +145,7 @@ class ShiftScheduleView(View):
 
 # 予定の一覧を表示するクラスベースビュー（複数条件検索機能付き）
 class ScheduleListView(ListView):
-    model = Schedule  # 対象のモデルを指定
+    model = Event  # 対象のモデルを指定
     template_name = 'schedule/schedule_list.html'  # 使用するテンプレートを指定
     context_object_name = 'schedules'  # テンプレート内で使用する変数名を指定
 
@@ -158,7 +158,7 @@ class ScheduleListView(ListView):
         importance = self.request.GET.get('importance')
         is_completed = self.request.GET.get('is_completed')
         
-        queryset = Schedule.objects.all()
+        queryset = Event.objects.all()
         
         # ユーザーが検索したクエリがあれば、タイトルまたは説明にそのクエリを含む項目で絞り込み
         if query:
@@ -180,7 +180,7 @@ class ScheduleListView(ListView):
 
 # 予定を新規作成するクラスベースビュー
 class ScheduleCreateView(CreateView):
-    model = Schedule  # 対象のモデルを指定
+    model = Event  # 対象のモデルを指定
     template_name = 'schedule/schedule_create.html'  # 使用するテンプレートを指定
     form_class = ScheduleForm
     success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定
@@ -193,7 +193,7 @@ class ScheduleCreateView(CreateView):
 
 # 予定を編集するクラスベースビュー
 class ScheduleUpdateView(UpdateView):
-    model = Schedule  # 対象のモデルを指定
+    model = Event  # 対象のモデルを指定
     fields = ['title', 'description', 'category', 'importance', 'is_completed']  # 入力フィールドを指定
     template_name = 'schedule/schedule_create.html'  # 使用するテンプレートを指定
     success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定
@@ -205,6 +205,6 @@ class ScheduleUpdateView(UpdateView):
 
 # 予定を削除するクラスベースビュー
 class ScheduleDeleteView(DeleteView):
-    model = Schedule  # 対象のモデルを指定
+    model = Event  # 対象のモデルを指定
     template_name = 'schedule/schedule_delete.html'  # 削除確認用のテンプレートを指定
     success_url = reverse_lazy('staff:schedule_list')  # 成功時のリダイレクト先を指定

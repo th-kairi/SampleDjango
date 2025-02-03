@@ -217,33 +217,33 @@ class ScheduleAdmin(admin.ModelAdmin):
 
     # フォームでの並び順を指定（必要に応じて）
     save_on_top = True  # 「保存」ボタンを上部に配置
-admin.site.register(Schedule, ScheduleAdmin)
+admin.site.register(Event, ScheduleAdmin)
 
 # UserSchedule管理用クラス
 class UserScheduleAdmin(admin.ModelAdmin):
     # 管理画面に表示するフィールドを指定
-    list_display = ('Member', 'schedule', 'day_of_week', 'is_completed')  # 必要なフィールドを追加
-    search_fields = ('Member__name', 'schedule__title')  # メンバー名や予定タイトルで検索可能にする
+    list_display = ('member', 'schedule', 'day_of_week', 'is_completed')  # 必要なフィールドを追加
+    search_fields = ('member__name', 'schedule__title')  # メンバー名や予定タイトルで検索可能にする
     list_filter = ('day_of_week', 'is_completed')  # 曜日や完了状態でフィルタリングできるようにする
 
     # 編集フォームでのフィールド配置
     fieldsets = (
         (None, {
-            'fields': ('Member', 'schedule', 'day_of_week', 'is_completed')
+            'fields': ('member', 'schedule', 'day_of_week', 'is_completed')
         }),
     )
     def get_member_name(self, obj):
         """UserSchedule インスタンスの member の name を表示"""
         return obj.member.name  # 'member' フィールドに関連する 'name' を表示
     
-    get_member_name.short_description = 'Member Name'  # ヘッダー名を変更
-
+    get_member_name.short_description = 'member Name'  # ヘッダー名を変更
+    
     search_fields = ('member__name', 'schedule__title')  # メンバー名や予定タイトルで検索可能にする
     list_filter = ('day_of_week', 'is_completed')  # 曜日や完了状態でフィルタリングできるようにする
 
     fieldsets = (
         (None, {
-            'fields': ('Member', 'schedule', 'day_of_week', 'is_completed')
+            'fields': ('member', 'schedule', 'day_of_week', 'is_completed')
         }),
     )
 

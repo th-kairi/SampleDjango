@@ -60,7 +60,7 @@ class ProductForm(forms.ModelForm):
 class ScheduleSelectionForm(forms.Form):
     """予定の選択フォーム"""
     selected_schedules = forms.ModelMultipleChoiceField(
-        queryset=Schedule.objects.all(),
+        queryset=Event.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False
     )

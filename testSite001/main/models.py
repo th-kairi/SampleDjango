@@ -376,7 +376,8 @@ class Importance(models.Model):
         return self.level
 
 # スケジュールモデル
-class Schedule(models.Model):
+# Event
+class Event(models.Model):
     # 予定のタイトルを保存するフィールド
     title = models.CharField(max_length=255, help_text="予定のタイトルを入力")
     # アップロードされた画像のパス（商品ごとにフォルダを分ける）
@@ -396,7 +397,7 @@ class Schedule(models.Model):
     
     # モデルの参照設定
     class Meta:
-        verbose_name_plural = "スケジュール"
+        verbose_name_plural = "イベント"
 
     def __str__(self):
         # 管理画面などでオブジェクトを識別するための文字列を返す
@@ -405,8 +406,8 @@ class Schedule(models.Model):
 
 # ユーザーと曜日ごとの予定を紐づけるテーブル
 class UserSchedule(models.Model):
-    Member = models.ForeignKey(Member, on_delete=models.CASCADE)  # 会員情報（ユーザー）
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 予定（スケジュール）
+    member = models.ForeignKey(Member, on_delete=models.CASCADE)  # 会員情報（ユーザー）
+    schedule = models.ForeignKey(Event, on_delete=models.CASCADE)  # 予定（スケジュール）
     day_of_week = models.PositiveIntegerField()  # 曜日を数値で表現（0=月曜日, 1=火曜日, ..., 6=日曜日）
     is_completed = models.BooleanField(default=False)  # 実際にその予定が完了したかどうか
 
@@ -414,10 +415,10 @@ class UserSchedule(models.Model):
     # モデルの参照設定
     class Meta:
         verbose_name_plural = "曜日毎のスケジュール"
-        unique_together = ('Member', 'schedule', 'day_of_week')  # 同一ユーザーの同じ曜日に同じ予定は1回だけ
+        unique_together = ('member', 'schedule', 'day_of_week')  # 同一ユーザーの同じ曜日に同じ予定は1回だけ
 
     def __str__(self):
-        return f"{self.Member.username} - {self.schedule.title} - {self.get_day_of_week_display()}"
+        return f"{self.member.username} - {self.schedule.title} - {self.get_day_of_week_display()}"
     
     def get_day_of_week_display(self):
         days_map = {1: '月', 2: '火', 3: '水', 4: '木', 5: '金', 6: '土', 7: '日'}

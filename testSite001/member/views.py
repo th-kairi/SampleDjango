@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 # クラスベースビューを作成するための基底クラス
-from django.views.generic import TemplateView, ListView, ListView, FormView
+from django.views.generic import TemplateView, ListView, ListView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -245,7 +245,7 @@ class UserScheduleListView(ListView):
 
     def get_queryset(self):
         """ログインユーザーのスケジュールを取得"""
-        return UserSchedule.objects.filter(Member=self.request.user) 
+        return UserSchedule.objects.filter(member=self.request.user) 
 
     def get_context_data(self, **kwargs):
         """曜日ごとにスケジュールを分類してコンテキストに追加"""
@@ -281,15 +281,15 @@ class UserScheduleListView(ListView):
         return day_map.get(day_of_week, '')
     
 # 予定選択
-class ScheduleSelectView(ListView):
+class EventSelectView(ListView):
     """予定の選択画面（検索機能付き）"""
-    model = Schedule
+    model = Event
     template_name = 'schedule/user_schedule_select.html'
     context_object_name = 'schedules'
 
     def get_queryset(self):
         """検索フォームの値を取得し、フィルタリングして予定を取得"""
-        queryset = Schedule.objects.all()
+        queryset = Event.objects.all()
 
         # ログインユーザーに紐づくUserScheduleの取得
         member = Member.objects.get(member_num=self.request.user.member_num)
@@ -301,7 +301,7 @@ class ScheduleSelectView(ListView):
 
         # すでに選択済みの予定を取得
         selected_schedules = UserSchedule.objects.filter(
-            Member=member,
+            member=member,
             day_of_week=day_of_week
         ).values_list('schedule_id', flat=True)
 
@@ -353,14 +353,14 @@ class ScheduleSelectView(ListView):
         if selected_schedule_ids:
             for schedule_id in selected_schedule_ids:
                 try:
-                    schedule = Schedule.objects.get(id=schedule_id)
-                except Schedule.DoesNotExist:
+                    schedule = Event.objects.get(id=schedule_id)
+                except Event.DoesNotExist:
                     # 該当する予定が存在しない場合
                     continue
 
                 # UserSchedule に登録（ユーザーごとのスケジュール）
                 UserSchedule.objects.create(
-                    Member=member,  # Member インスタンス
+                    member=member,  # Member インスタンス
                     schedule=schedule,  # 選択した予定
                     day_of_week=day_of_week  # 数字で曜日を登録
                 )
