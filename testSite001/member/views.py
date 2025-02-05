@@ -33,9 +33,15 @@ class AddPointsView(View):
             return redirect('member:index')  # リダイレクト先を適切に設定
 
         # Walletの存在チェックをして取得または作成
+        # `get_or_create` は、該当する `Wallet` が存在する場合は取得し、
+        # 存在しない場合は新しく作成してタプル (wallet, created) を返す
         wallet = Wallet.objects.get_or_create(member=request.user.member)
 
-        # ユーザーのWallet情報をテンプレートに渡す
+        # `get_or_create` は (walletオブジェクト, 作成されたかどうかのブール値) のタプルを返す
+        # そのため、walletがタプルの場合、walletオブジェクトのみ取得する
+        wallet = wallet[0] if isinstance(wallet, tuple) else wallet
+
+        # ユーザーの `Wallet` 情報をテンプレートに渡して表示する
         return render(request, 'member/add_points.html', {'wallet': wallet, 'point_values': point_values})
 
     def post(self, request):
@@ -283,88 +289,115 @@ class UserScheduleListView(ListView):
 # 予定選択
 class EventSelectView(ListView):
     """予定の選択画面（検索機能付き）"""
-    model = Event
-    template_name = 'schedule/user_schedule_select.html'
-    context_object_name = 'schedules'
+    model = Event  # Eventモデルを使用
+    template_name = 'schedule/user_schedule_select.html'  # 使用するテンプレート
+    context_object_name = 'schedules'  # コンテキスト変数名として 'schedules' を指定
 
     def get_queryset(self):
         """検索フォームの値を取得し、フィルタリングして予定を取得"""
-        queryset = Event.objects.all()
+        queryset = Event.objects.all()  # 全てのEventを取得
 
-        # ログインユーザーに紐づくUserScheduleの取得
+        # ログインユーザーに紐づくMemberを取得
         member = Member.objects.get(member_num=self.request.user.member_num)
-        day_of_week_str = self.kwargs.get('day')  # URLパラメータから曜日を取得
+
+        # URLパラメータから曜日を取得（例: 'mon'）
+        day_of_week_str = self.kwargs.get('day')
+        
+        # 英語の曜日を数字に変換する辞書
         days_map = {
             'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6, 'sun': 7
         }
+        
+        # 曜日を数字に変換
         day_of_week = days_map.get(day_of_week_str)
 
-        # すでに選択済みの予定を取得
+        # すでに選択済みの予定を取得（UserScheduleから）
         selected_schedules = UserSchedule.objects.filter(
-            member=member,
-            day_of_week=day_of_week
-        ).values_list('schedule_id', flat=True)
+            member=member,  # ログインユーザーのMemberを指定
+            day_of_week=day_of_week  # 選択された曜日を指定
+        ).values_list('schedule_id', flat=True)  # 予定IDのリストを取得
 
         # 既に選択されている予定を除外
         queryset = queryset.exclude(id__in=selected_schedules)
 
-        # 検索キーワード
+        # 検索キーワードがあればフィルタリング
         q = self.request.GET.get('q')
         if q:
-            queryset = queryset.filter(title__icontains=q)
+            queryset = queryset.filter(title__icontains=q)  # タイトルにキーワードが含まれている予定をフィルタリング
 
-        # カテゴリー
+        # カテゴリーが選択されていればフィルタリング
         category_id = self.request.GET.get('category')
         if category_id:
             queryset = queryset.filter(category_id=category_id)
 
-        # 重要度
+        # 重要度が選択されていればフィルタリング
         importance_id = self.request.GET.get('importance')
         if importance_id:
             queryset = queryset.filter(importance_id=importance_id)
 
-        return queryset
+        return queryset  # 最終的にフィルタリングされた予定リストを返す
 
     def get_context_data(self, **kwargs):
         """カテゴリー・重要度リストをテンプレートに渡す"""
-        context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        context['importances'] = Importance.objects.all()
+        context = super().get_context_data(**kwargs)  # 親クラスのcontextを取得
+        context['categories'] = Category.objects.all()  # すべてのカテゴリを取得してcontextに追加
+        context['importances'] = Importance.objects.all()  # すべての重要度を取得してcontextに追加
+        day_of_week_str = self.kwargs.get('day')  # URLパラメータから曜日を取得
+        japanese_day = self.convert_day_to_japanese(day_of_week_str)  # 日本語の曜日に変換
+        context['japanese_day'] = japanese_day  # コンテキストに追加
         return context
+
+    def convert_day_to_japanese(self, day_of_week):
+        """英語の曜日を日本語の曜日に変換"""
+        day_map = {
+            'mon': '月',
+            'tue': '火',
+            'wed': '水',
+            'thu': '木',
+            'fri': '金',
+            'sat': '土',
+            'sun': '日',
+        }
+        return day_map.get(day_of_week, '')
 
     def post(self, request, *args, **kwargs):
         """選択した予定を登録する処理"""
-        selected_schedule_ids = request.POST.getlist('selected_schedules')  # チェックした予定のIDリスト
-        day_of_week_str = kwargs.get('day')  # URLパラメータから曜日を取得
-
-        # 曜日を数字に変換（英語の曜日を数字に変換）
+        # フォームから選択された予定のIDリストを取得
+        selected_schedule_ids = request.POST.getlist('selected_schedules')  # 'selected_schedules'のパラメータをリストで取得
+        
+        # URLパラメータから曜日を取得
+        day_of_week_str = kwargs.get('day')
+        
+        # 英語の曜日を数字に変換する辞書
         days_map = {
             'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6, 'sun': 7
         }
+        
+        # 曜日を数字に変換
         day_of_week = days_map.get(day_of_week_str)
 
         if not day_of_week:
             # 不正な曜日の場合、エラーページにリダイレクト
             return redirect('error_page')  # 適切なエラーページを作成してリダイレクトします
 
-        # ログインユーザーに紐づく Member を取得
+        # ログインユーザーに紐づくMemberを取得
         member = Member.objects.get(member_num=request.user.member_num)
 
         if selected_schedule_ids:
+            # 選択した予定IDがあれば、UserScheduleに登録
             for schedule_id in selected_schedule_ids:
                 try:
-                    schedule = Event.objects.get(id=schedule_id)
+                    schedule = Event.objects.get(id=schedule_id)  # 予定IDからEventを取得
                 except Event.DoesNotExist:
-                    # 該当する予定が存在しない場合
+                    # 該当する予定が存在しない場合はスキップ
                     continue
 
-                # UserSchedule に登録（ユーザーごとのスケジュール）
+                # UserScheduleに選択した予定を登録
                 UserSchedule.objects.create(
-                    member=member,  # Member インスタンス
-                    schedule=schedule,  # 選択した予定
+                    member=member,  # メンバー情報を指定
+                    schedule=schedule,  # 選択した予定を指定
                     day_of_week=day_of_week  # 数字で曜日を登録
                 )
 
         # 登録後、スケジュール一覧ページへリダイレクト
-        return redirect('member:user_schedule_list')
-
+        return redirect('member:user_schedule_list')  # ユーザーのスケジュール一覧ページにリダイレクト

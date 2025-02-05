@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block content %}
-<h2 class="text-center">予定の追加（{{ view.kwargs.day }}曜日）</h2>
+<h2 class="text-center">予定の追加（{{ japanese_day }}曜日）</h2>
+
+
 
 <!-- 検索フォーム -->
 <form method="GET" class="mb-3">
@@ -25,7 +27,7 @@
                 <option value="">重要度選択</option>
                 {% for importance in importances %}
                     <option value="{{ importance.id }}" {% if request.GET.importance == importance.id|stringformat:"s" %}selected{% endif %}>
-                        {{ importance.name }}
+                        {{ importance.level }}
                     </option>
                 {% endfor %}
             </select>
@@ -40,28 +42,30 @@
 <form method="POST">
     {% csrf_token %}
     <div class="container">
-        <div class="row row-cols-6 g-3">  <!-- 横6列に配置 -->
-            {% for schedule in schedules %}
-            <div class="col">
-                <label class="card">
-                    <input type="checkbox" name="selected_schedules" value="{{ schedule.id }}" class="schedule-checkbox" style="display: none;">
-                    <div class="position-relative">
-                        <!-- 画像を3:4のアスペクト比で表示 -->
-                        <div class="image-container">
-                            <img src="{{ schedule.image.url }}" class="img-fluid" alt="{{ schedule.title }}">
+        {% if schedules %}
+            <div class="row row-cols-6 g-3">  <!-- 横6列に配置 -->
+                {% for schedule in schedules %}
+                <div class="col">
+                    <label class="card">
+                        <input type="checkbox" name="selected_schedules" value="{{ schedule.id }}" class="schedule-checkbox" style="display: none;">
+                        <div class="position-relative">
+                            <!-- 画像を3:4のアスペクト比で表示 -->
+                            <div class="image-container">
+                                <img src="{{ schedule.image.url }}" class="img-fluid" alt="{{ schedule.title }}">
+                            </div>
+                            <!-- 画像上にタイトルと重要度を表示 -->
+                            <div class="card-img-overlay text-white bg-dark bg-opacity-50 p-2 text-center">
+                                <h6 class="mb-1">{{ schedule.title }}</h6>
+                                <span class="badge bg-warning">{{ schedule.importance }}</span>
+                            </div>
                         </div>
-                        <!-- 画像上にタイトルと重要度を表示 -->
-                        <div class="card-img-overlay text-white bg-dark bg-opacity-50 p-2 text-center">
-                            <h6 class="mb-1">{{ schedule.title }}</h6>
-                            <span class="badge bg-warning">{{ schedule.importance }}</span>
-                        </div>
-                    </div>
-                </label>
+                    </label>
+                </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <p class="text-muted">該当する予定がありません。</p>
-            {% endfor %}
-        </div>
+        {% else %}
+            <p class="text-muted">該当の予定がありません</p>
+        {% endif %}
     </div>
     
     <button type="submit" class="btn btn-success mt-3">追加</button>

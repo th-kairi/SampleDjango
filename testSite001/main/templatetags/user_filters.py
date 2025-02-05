@@ -1,5 +1,4 @@
 from django import template
-from main.models import *
 
 register = template.Library()
 
@@ -9,12 +8,12 @@ def is_admin(user):
 
 @register.filter
 def is_member(user):
-    return isinstance(user, Member)
+    return hasattr(user, 'member')  # Memberとしての関連があるか確認
 
 @register.filter
 def is_employee(user):
-    return isinstance(user, Employee)
+    return hasattr(user, 'employee')  # Employeeとしての関連があるか確認
 
 @register.filter
 def is_staff(user):
-    return isinstance(user, Staff)
+    return hasattr(user, 'staff')  # Staffとしての関連があるか確認
