@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if messages %}
+{% for message in messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} py-3 px-4 fs-5" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+{% endif %}
 <div class="mb-4">
     <!-- 勲章授与画面に遷移するアイコンボタン -->
     <a href="{% url 'member:add_points' %}" class="btn btn-primary">

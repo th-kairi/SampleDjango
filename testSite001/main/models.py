@@ -3,20 +3,11 @@ from django.contrib.auth.models import AbstractUser
 import random
 
 
-# 役職
-class position(models.Model):
-    CATEGORY_TYPE_CHOICES = [('部署', '部署'), ('課', '課'), ('役職', '役職')]
-    cd = models.CharField(verbose_name="コード", max_length=10, primary_key=True)
-    name = models.CharField(verbose_name="名称",max_length=20)
-    name_en = models.CharField(verbose_name="名称(EN)",max_length=20)
-    type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES, blank=True, null=True)
-
-    # 役職モデルの参照設定
-    class Meta:
-        verbose_name_plural = "役職"
-    def __str__(self):
-        # return f"{self.name}({self.cd})"
-        return f"{self.name}"
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+# ★
+# ★ アカウント関連モデル
+# ★
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
 # カスタムユーザー用
 # 会員番号の採番乱数関数
@@ -54,6 +45,21 @@ class CustomUser(AbstractUser):
     #         self.is_password_encrypted = True
     #     super().save(*args, **kwargs)
     
+# 役職
+class position(models.Model):
+    CATEGORY_TYPE_CHOICES = [('部署', '部署'), ('課', '課'), ('役職', '役職')]
+    cd = models.CharField(verbose_name="コード", max_length=10, primary_key=True)
+    name = models.CharField(verbose_name="名称",max_length=20)
+    name_en = models.CharField(verbose_name="名称(EN)",max_length=20)
+    type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES, blank=True, null=True)
+
+    # 役職モデルの参照設定
+    class Meta:
+        verbose_name_plural = "役職"
+    def __str__(self):
+        # return f"{self.name}({self.cd})"
+        return f"{self.name}"
+
 # 職員モデル（CustomUserを継承）
 class Employee(CustomUser):
     division = models.ForeignKey(position,
@@ -122,36 +128,11 @@ class Member(CustomUser):
         if is_new:
             Wallet.objects.get_or_create(member=self)  # Walletが存在しない場合に作成
 
-# 勲章モデル
-class Medal(models.Model):
-    name = models.CharField(max_length=100, verbose_name="勲章名")
-    image = models.ImageField(upload_to='medals/', verbose_name="アイコン", blank=True, null=True)  # 勲章のアイコン画像
-    description = models.TextField(verbose_name="勲章の説明")
-    requirements = models.TextField(max_length=400,verbose_name="授与条件", blank=True, null=True)  # 授与条件
-    eligible_for = models.TextField(max_length=100, verbose_name="対象者", blank=True, null=True)  # 対象者
-    awarding_method = models.TextField(max_length=300, verbose_name="授与方法", blank=True, null=True)  # 授与方法
-
-    class Meta:
-        verbose_name_plural = "勲章"
-
-    def __str__(self):
-        return self.name
-
-
-# 会員が取得した勲章
-class MemberMedal(models.Model):
-    member = models.ForeignKey(Member, verbose_name="会員", on_delete=models.CASCADE)  # 会員
-    medal = models.ForeignKey(Medal, verbose_name="勲章", on_delete=models.CASCADE)  # 勲章
-    acquisition_date = models.DateField(verbose_name="取得日")  # 取得日
-    expiration_date = models.DateField(verbose_name="有効期限", null=True, blank=True)  # 有効期限（無期限の場合はNULL）
-
-    def __str__(self):
-        return f"{self.member.name} - {self.medal.name}"
-
-    class Meta:
-        verbose_name_plural = "会員勲章"
-        unique_together = ('member', 'medal')  # 同じ会員が同じ勲章を2度取得できないように設定
-
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+# ★
+# ★ Staff用　アプリケーションのモデル
+# ★
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
 # ====================================================================================================
 # ===== シフトアプリ
@@ -234,6 +215,67 @@ class ShiftSchedule(models.Model):
         verbose_name_plural = "シフトスケジュール"
         unique_together = ('staff', 'date', 'start_time')  # 同一日に同じ時間帯の重複を防ぐ
 
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+# ★
+# ★ Member用　アプリケーションのモデル
+# ★
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+# 勲章モデル
+class Medal(models.Model):
+    name = models.CharField(max_length=100, verbose_name="勲章名")
+    image = models.ImageField(upload_to='medals/', verbose_name="アイコン", blank=True, null=True)  # 勲章のアイコン画像
+    description = models.TextField(verbose_name="勲章の説明")
+    requirements = models.TextField(max_length=400,verbose_name="授与条件", blank=True, null=True)  # 授与条件
+    eligible_for = models.TextField(max_length=100, verbose_name="対象者", blank=True, null=True)  # 対象者
+    awarding_method = models.TextField(max_length=300, verbose_name="授与方法", blank=True, null=True)  # 授与方法
+
+    class Meta:
+        verbose_name_plural = "勲章"
+
+    def __str__(self):
+        return self.name
+
+
+# 会員が取得した勲章
+class MemberMedal(models.Model):
+    member = models.ForeignKey(Member, verbose_name="会員", on_delete=models.CASCADE)  # 会員
+    medal = models.ForeignKey(Medal, verbose_name="勲章", on_delete=models.CASCADE)  # 勲章
+    acquisition_date = models.DateField(verbose_name="取得日")  # 取得日
+    expiration_date = models.DateField(verbose_name="有効期限", null=True, blank=True)  # 有効期限（無期限の場合はNULL）
+
+    def __str__(self):
+        return f"{self.member.name} - {self.medal.name}"
+
+    class Meta:
+        verbose_name_plural = "会員勲章"
+        unique_together = ('member', 'medal')  # 同じ会員が同じ勲章を2度取得できないように設定
+
+# 購入用ポイントを管理するウォレットモデル
+class Wallet(models.Model):
+    member = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="wallet", verbose_name="会員")
+    # 現在のポイント残高を格納するフィールド
+    balance = models.PositiveIntegerField(default=0, verbose_name="ポイント残高")
+
+    class Meta:
+        verbose_name_plural = "ウォレット"
+
+    def __str__(self):
+        # 会員名とポイント残高を表示
+        return f"{self.member.name}'s Wallet - {self.balance} points"
+
+    # ポイントを追加するメソッド
+    def add_points(self, amount):
+        self.balance += amount
+        self.save()
+
+    # ポイントを使用するメソッド
+    def use_points(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+            self.save()
+            return True
+        return False
 
 # ====================================================================================================
 # ===== フリマアプリ
@@ -279,33 +321,6 @@ class ProductImage(models.Model):
         # 管理画面などで画像の関連商品名を表示する
         return f"Image for {self.product.name}"
 
-
-# 購入用ポイントを管理するウォレットモデル
-class Wallet(models.Model):
-    member = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="wallet", verbose_name="会員")
-    # 現在のポイント残高を格納するフィールド
-    balance = models.PositiveIntegerField(default=0, verbose_name="ポイント残高")
-
-    class Meta:
-        verbose_name_plural = "ウォレット"
-
-    def __str__(self):
-        # 会員名とポイント残高を表示
-        return f"{self.member.name}'s Wallet - {self.balance} points"
-
-    # ポイントを追加するメソッド
-    def add_points(self, amount):
-        self.balance += amount
-        self.save()
-
-    # ポイントを使用するメソッド
-    def use_points(self, amount):
-        if self.balance >= amount:
-            self.balance -= amount
-            self.save()
-            return True
-        return False
-
 # 商品購入時に一時的に作成するモデル
 class Cart(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE, verbose_name="会員")
@@ -318,7 +333,6 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.member.name}'s Cart - {self.product.name} ({self.quantity})"
     
-
 # 購入履歴を管理する注文モデル
 class Order(models.Model):
     buyer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="orders", verbose_name="購入者")
@@ -335,7 +349,6 @@ class Order(models.Model):
         # 管理画面などで購入者名と注文IDを表示
         return f"Order #{self.id} by {self.buyer.name}"
 
-
 # 注文に紐付く商品の詳細情報を管理するモデル
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", verbose_name="注文")
@@ -349,7 +362,6 @@ class OrderItem(models.Model):
     def __str__(self):
         # 管理画面などで注文IDと商品名を表示
         return f"Order #{self.order.id} - {self.product.name}"
-
 
 # ====================================================================================================
 # ===== スケジュールアプリ
@@ -403,7 +415,6 @@ class Event(models.Model):
         # 管理画面などでオブジェクトを識別するための文字列を返す
         return self.title
     
-
 # ユーザーと曜日ごとの予定を紐づけるテーブル
 class UserSchedule(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)  # 会員情報（ユーザー）

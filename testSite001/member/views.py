@@ -115,18 +115,16 @@ class ProductListView(ListView):
 # ---------------------------------------------------------------------
 class ProductCreateView(LoginRequiredMixin, View):
     def get(self, request):
-        """
-        GETリクエストを処理するメソッド。
-        フォームを表示する。
-        """
+        # ログインユーザーが `Member` モデルかを確認
+        if not hasattr(request.user, 'member'):
+            # 異なる場合はエラーメッセージを設定してリダイレクト
+            messages.error(request, "このページにアクセスする権限がありません。")
+            return redirect('member:product_list')  # リダイレクト先を適切に設定
+
         form = ProductForm()  # 新しいフォームを作成
         return render(request, 'products/product_create.html', {'product_form': form})
 
     def post(self, request):
-        """
-        POSTリクエストを処理するメソッド。
-        商品の登録を行う。
-        """
         form = ProductForm(request.POST)  # POSTデータを使用してフォームを作成
         if form.is_valid():  # フォームが有効である場合
             product = form.save(commit=False)  # フォームのデータを保存する前に一時保存
@@ -138,10 +136,6 @@ class ProductCreateView(LoginRequiredMixin, View):
             return render(request, 'products/product_create.html', {'product_form': form})
 
     def _handle_images(self, request, product):
-        """
-        画像を処理する内部メソッド。
-        画像を保存する。
-        """
         if 'images' in request.FILES:  # 'images' キーがリクエストに存在するか確認
             images = request.FILES.getlist('images')  # リクエストから画像ファイルを取得
             for image in images:  # 各画像について処理を実行
@@ -249,7 +243,7 @@ class UserScheduleListView(ListView):
     model = UserSchedule
     template_name = 'schedules/user_schedule_list.html'
     context_object_name = 'user_schedules'
-
+    
     def get_queryset(self):
         """ログインユーザーのスケジュールを取得"""
         return UserSchedule.objects.filter(member=self.request.user) 
@@ -294,12 +288,17 @@ class EventSelectView(ListView):
     template_name = 'schedules/user_schedule_select.html'  # 使用するテンプレート
     context_object_name = 'schedules'  # コンテキスト変数名として 'schedules' を指定
 
-    def get_queryset(self):
+    def get_queryset(self):        
         """検索フォームの値を取得し、フィルタリングして予定を取得"""
         queryset = Event.objects.all()  # 全てのEventを取得
 
+        
+        # ログインユーザーが `Member` モデルかを確認
         # ログインユーザーに紐づくMemberを取得
-        member = Member.objects.get(member_num=self.request.user.member_num)
+        if not hasattr(self.request.user, 'member'):
+            member = CustomUser.objects.get(member_num=self.request.user.member_num)
+        else:
+            member = Member.objects.get(member_num=self.request.user.member_num)
 
         # URLパラメータから曜日を取得（例: 'mon'）
         day_of_week_str = self.kwargs.get('day')
@@ -360,9 +359,14 @@ class EventSelectView(ListView):
             'sun': '日',
         }
         return day_map.get(day_of_week, '')
-
+    
     def post(self, request, *args, **kwargs):
-        """選択した予定を登録する処理"""
+        # ログインユーザーが `Member` モデルかを確認
+        if not hasattr(request.user, 'member'):
+            # 異なる場合はエラーメッセージを設定してリダイレクト
+            messages.error(request, "スケジュールを作成することができません")
+            return redirect('member:user_schedule_list')  # リダイレクト先を適切に設定
+        
         # フォームから選択された予定のIDリストを取得
         selected_schedule_ids = request.POST.getlist('selected_schedules')  # 'selected_schedules'のパラメータをリストで取得
         

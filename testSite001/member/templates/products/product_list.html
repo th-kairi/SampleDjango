@@ -3,6 +3,13 @@
 
 {% block content %}
 <div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} py-3 px-4 fs-5" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <!-- 検索フォーム -->
         <form action="{% url 'member:product_list' %}" method="get" class="form-inline">

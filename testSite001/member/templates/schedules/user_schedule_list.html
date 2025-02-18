@@ -2,6 +2,16 @@
 {% load static %}
 
 {% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success
+                          {% else %}alert-danger
+                          {% endif %} py-3 px-4 fs-5"
+            role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 <h2 class="text-center">会員の曜日ごとのスケジュール</h2>
 
 <!-- 曜日スケジュールをテーブルレイアウトで表示 -->
@@ -28,12 +38,10 @@
                         <li class="mb-3">
                             <div class="d-flex align-items-center">
                                 <!-- アイコン -->
-                                <a href="{% url 'member:schedule_detail' schedule.id schedule.schedule.id %}" >
-                                    <img src="{{ schedule.schedule.image.url }}" 
-                                        alt="{{ schedule.schedule.title }}" 
-                                        class="rounded-circle me-2" 
-                                        data-bs-toggle="tooltip" title="{{ schedule.schedule.title }}"
-                                        style="width: 40px; height: 40px;">
+                                <a href="{% url 'member:schedule_detail' schedule.id schedule.schedule.id %}">
+                                    <img src="{{ schedule.schedule.image.url }}" alt="{{ schedule.schedule.title }}"
+                                        class="rounded-circle me-2" data-bs-toggle="tooltip"
+                                        title="{{ schedule.schedule.title }}" style="width: 40px; height: 40px;">
                                 </a>
 
                                 <div>
@@ -56,10 +64,8 @@
                     </ul>
 
                     <!-- 予定追加ボタンにツールチップ -->
-                    <a href="{% url 'member:user_schedule_add' day=day %}" 
-                       class="btn btn-sm btn-outline-primary"
-                       data-bs-toggle="tooltip"
-                       title="この曜日に新しい予定を追加">
+                    <a href="{% url 'member:user_schedule_add' day=day %}" class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="tooltip" title="この曜日に新しい予定を追加">
                         ＋ 追加
                     </a>
                 </td>
