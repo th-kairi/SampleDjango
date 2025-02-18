@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 # クラスベースビューを作成するための基底クラス
 from django.views.generic import TemplateView, ListView, ListView
 from django.views.generic.edit import UpdateView
+from django.views.generic import DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views import View
@@ -246,7 +247,7 @@ class CartConfirmationView(LoginRequiredMixin, View):
 class UserScheduleListView(ListView):
     """ユーザーのスケジュール一覧を曜日ごとに表示"""
     model = UserSchedule
-    template_name = 'schedule/user_schedule_list.html'
+    template_name = 'schedules/user_schedule_list.html'
     context_object_name = 'user_schedules'
 
     def get_queryset(self):
@@ -290,7 +291,7 @@ class UserScheduleListView(ListView):
 class EventSelectView(ListView):
     """予定の選択画面（検索機能付き）"""
     model = Event  # Eventモデルを使用
-    template_name = 'schedule/user_schedule_select.html'  # 使用するテンプレート
+    template_name = 'schedules/user_schedule_select.html'  # 使用するテンプレート
     context_object_name = 'schedules'  # コンテキスト変数名として 'schedules' を指定
 
     def get_queryset(self):
@@ -401,3 +402,69 @@ class EventSelectView(ListView):
 
         # 登録後、スケジュール一覧ページへリダイレクト
         return redirect('member:user_schedule_list')  # ユーザーのスケジュール一覧ページにリダイレクト
+
+# スケジュール詳細ページ
+class ScheduleDetailView(DetailView):
+    model = UserSchedule
+    template_name = 'schedules/user_schedule_detail.html'
+    context_object_name = 'user_schedule'
+
+    def get_object(self):
+        # URLパラメータからIDを取得
+        schedule_id = self.kwargs.get('schedule_id')
+        
+        # UserScheduleを取得
+        user_schedule = UserSchedule.objects.get(id=schedule_id)
+        
+        return user_schedule
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_schedule = context['user_schedule']
+        
+        # UserScheduleの`schedule`フィールドを使って関連するEventを取得
+        event = user_schedule.schedule
+        context['event'] = event
+        
+        return context
+
+# スケジュールの削除
+class ScheduleDeleteView(DeleteView):
+    model = UserSchedule
+    template_name = 'schedules/user_schedule_confirm_delete.html'
+    context_object_name = 'user_schedule'
+    success_message = "スケジュールが削除されました。"
+    success_url = reverse_lazy('member:user_schedule_list')  # 削除後にリダイレクトするURL
+
+    # 曜日マッピング
+    WEEKDAY_MAP = {
+        0: "月曜日",
+        1: "火曜日",
+        2: "水曜日",
+        3: "木曜日",
+        4: "金曜日",
+        5: "土曜日",
+        6: "日曜日",
+    }
+
+    def get_object(self):
+        # URLパラメータからIDを取得
+        schedule_id = self.kwargs.get('id')
+        
+        # UserScheduleを取得
+        user_schedule = UserSchedule.objects.get(id=schedule_id)
+        
+        return user_schedule
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_schedule = self.get_object()
+        
+        # 曜日を文字に変換してコンテキストに追加
+        context["day_of_week_display"] = self.WEEKDAY_MAP.get(user_schedule.day_of_week, "不明")
+        
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, self.success_message)
+        return super().delete(request, *args, **kwargs)

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 class="text-center">会員の曜日ごとのスケジュール</h2>
+
+<!-- 曜日スケジュールをテーブルレイアウトで表示 -->
+<div class="container">
+    <table class="table table-bordered text-center" style="table-layout: fixed;">
+        <thead class="table-dark">
+            <tr>
+                <th class="col">月曜日</th>
+                <th class="col">火曜日</th>
+                <th class="col">水曜日</th>
+                <th class="col">木曜日</th>
+                <th class="col">金曜日</th>
+                <th class="col table-primary">土曜日</th>
+                <th class="col table-primary">日曜日</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for day, schedules in schedules_by_day.items %}
+                <td>
+                    <!-- 予定リスト -->
+                    <ul class="list-unstyled mb-0">
+                        {% for schedule in schedules %}
+                        <li class="mb-3">
+                            <div class="d-flex align-items-center">
+                                <!-- アイコン -->
+                                <a href="{% url 'member:schedule_detail' schedule.id schedule.schedule.id %}" >
+                                    <img src="{{ schedule.schedule.image.url }}" 
+                                        alt="{{ schedule.schedule.title }}" 
+                                        class="rounded-circle me-2" 
+                                        data-bs-toggle="tooltip" title="{{ schedule.schedule.title }}"
+                                        style="width: 40px; height: 40px;">
+                                </a>
+
+                                <div>
+                                    <!-- タイトルにツールチップ、クリックで詳細画面へ遷移 -->
+                                    <div class="text-dark text-decoration-none text-nowrap">
+                                        {{ schedule.schedule.title|truncatechars:10 }}
+                                    </div>
+                                    <br>
+
+                                    <!-- 重要度の説明をツールチップで -->
+                                    <div class="badge bg-info">
+                                        {{ schedule.schedule.importance }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">予定なし</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- 予定追加ボタンにツールチップ -->
+                    <a href="{% url 'member:user_schedule_add' day=day %}" 
+                       class="btn btn-sm btn-outline-primary"
+                       data-bs-toggle="tooltip"
+                       title="この曜日に新しい予定を追加">
+                        ＋ 追加
+                    </a>
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

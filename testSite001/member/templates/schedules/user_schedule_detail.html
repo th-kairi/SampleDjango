@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">会員の曜日ごとのスケジュール</h2>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">{{ user_schedule.title }}</h3>
+                <p><strong>カテゴリ:</strong> {{ user_schedule.schedule.category.name }}</p>
+                <p><strong>重要度:</strong> {{ user_schedule.schedule.importance.level }}</p>
+                <p><strong>説明:</strong> {{ user_schedule.schedule.description }}</p>
+
+                {% if user_schedule.schedule.image %}
+                    <div class="mt-3">
+                        <h5>画像:</h5>
+                        <img src="{{ user_schedule.schedule.image.url }}" alt="イベント画像" class="img-fluid rounded">
+                    </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <a href="{% url 'member:schedule_delete' user_schedule.pk %}" class="btn btn-danger">このスケジュールを削除</a>
+                    <a href="{% url 'member:user_schedule_list' %}" class="btn btn-secondary">リストに戻る</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

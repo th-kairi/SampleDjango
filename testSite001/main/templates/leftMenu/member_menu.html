@@ -1,4 +1,29 @@
 <!-- 会員用メニュー項目 -->
-<li class="list-group-item">
-    <a class="nav-link" href="{% url 'accounts:password_encryption' %}">暗号化画面</a>
-</li>
+<ul class="list-group">
+    <li class="list-group-item">
+        <a class="nav-link d-block text-truncate text-md-wrap fs-6 fs-md-5"
+           href="{% url 'member:add_points' %}"
+           data-bs-toggle="tooltip"
+           title="ポイント追加">
+            ポイント追加
+        </a>
+    </li>
+    <li class="list-group-item">
+        <a class="nav-link d-block text-truncate text-md-wrap fs-6 fs-md-5"
+           href="{% url 'member:product_list' %}"
+           data-bs-toggle="tooltip"
+           title="フリマアプリ">
+            フリマアプリ
+        </a>
+    </li>
+    <li class="list-group-item">
+        <a class="nav-link d-block text-truncate text-md-wrap fs-6 fs-md-5"
+           href="{% url 'member:user_schedule_list' %}"
+           data-bs-toggle="tooltip"
+           title="スケジュール（曜日）">
+            スケジュール（曜日）
+        </a>
+    </li>
+</ul>
+
+

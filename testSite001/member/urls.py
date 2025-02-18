@@ -24,6 +24,9 @@ urlpatterns = [
     
     path('user-schedule-list/', UserScheduleListView.as_view(), name='user_schedule_list'),
     path('add/<str:day>/', EventSelectView.as_view(), name='user_schedule_add'),
+    path('schedule/<int:schedule_id>/<int:event_id>/', ScheduleDetailView.as_view(), name='schedule_detail'),
+    path('schedule/<int:id>/delete/', ScheduleDeleteView.as_view(), name='schedule_delete'),  # 削除処理
+
 
 
 
